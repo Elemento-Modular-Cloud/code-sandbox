@@ -1,7 +1,48 @@
 from enum import Enum
-from scapy.all import ARP, Ether, srp
+from scapy.all import arping as scarping
 import psutil
-from socket import AF_INET, AF_INET6
+from socket import AF_INET, AF_INET6, gethostbyaddr, herror, inet_aton
+from tabulate import tabulate
+from ipaddress import IPv4Network
+import json
+import os
+from zeroconf import ServiceBrowser, Zeroconf
+
+
+def load_mac_map():
+    script_directory = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(script_directory, 'mac_24bit.json')
+    with open(file_path, 'r') as json_file:
+        data = json.load(json_file, strict=False)
+    return data
+
+
+MAC_MAP = load_mac_map()
+
+
+def merge_lists_of_dicts(list1, list2, key):
+    """
+    Merge two lists of dictionaries avoiding duplicate entries based on a specified key.
+
+    Args:
+        list1 (list): First list of dictionaries.
+        list2 (list): Second list of dictionaries.
+        key (str): Key within the dictionaries to determine uniqueness.
+
+    Returns:
+        list: Merged list of dictionaries with no duplicate entries based on the specified key.
+    """
+    # Create a set to store unique keys encountered so far
+    unique_keys = set()
+
+    # Merge the lists while avoiding duplicates based on the specified key
+    merged_list = []
+    for item in list1 + list2:
+        if item[key] not in unique_keys:
+            unique_keys.add(item[key])
+            merged_list.append(item)
+
+    return merged_list
 
 
 class isIPVersion(Enum):
@@ -59,6 +100,89 @@ def subnet_mask_to_mask_length(subnet_mask):
     return mask_length
 
 
+def get_hostname_from_ip(ip_address):
+    """
+    Retrieve the hostname associated with a given IP address.
+
+    Args:
+        ip_address (str): IP address of the device.
+
+    Returns:
+        str: Hostname associated with the IP address, or "Hostname not found" if not found.
+    """
+    try:
+        # Perform reverse DNS lookup to retrieve hostname
+        hostname = gethostbyaddr(ip_address)[0]
+        return hostname
+    except herror:
+        return ""  # get_mdns_hostname(ip_address=ip_address)
+    except Exception as e:
+        # Handle other exceptions that may occur
+        return f"Error occurred: {e}"
+
+
+def get_hostnames_from_ips(devices):
+    """
+    Retrieve hostnames for a list of devices based on their IP addresses.
+
+    Args:
+        devices (list): List of dictionaries containing the "ip" key.
+
+    Returns:
+        list: List of dictionaries containing both "ip" and "hostname" keys.
+    """
+    for device in devices:
+        ip_address = device.get("ip")
+        if ip_address:
+            # Retrieve hostname for each IP address using the get_hostname_from_ip function
+            device["hostname"] = get_hostname_from_ip(ip_address)
+        else:
+            # Handle the case when the "ip" key is not present in the dictionary
+            device["hostname"] = "IP not provided"
+
+    return devices
+
+
+def get_vendor_from_mac(mac_address):
+    """
+    Retrieve the vendor associated with a given MAC address based on the OUI database.
+
+    Args:
+        mac_address (str): MAC address in the format "XX:XX:XX:XX:XX:XX".
+
+    Returns:
+        str: Vendor name associated with the MAC address.
+    """
+
+    # Extract the OUI from the MAC address (first three octets)
+    oui = mac_address.upper().replace(":", "")[:6]
+
+    # Lookup the vendor based on the OUI
+    return MAC_MAP.get(oui)
+
+
+def get_vendors_from_macs(devices):
+    """
+    Retrieve vendors for a list of devices based on their MAC addresses.
+
+    Args:
+        devices (list): List of dictionaries containing the "mac" key.
+
+    Returns:
+        list: List of dictionaries containing both "mac" and "vendor" keys.
+    """
+    for device in devices:
+        mac_address = device.get("mac")
+        if mac_address:
+            # Retrieve vendor for each MAC address using the get_vendor_from_mac function
+            device["vendor"] = get_vendor_from_mac(mac_address)
+        else:
+            # Handle the case when the "mac" key is not present in the dictionary
+            device["vendor"] = "MAC not provided"
+
+    return devices
+
+
 def get_all_ip_ranges(ipv: isIPVersion = isIPVersion.BOTH):
     """
     Retrieve all IP ranges based on the specified IP version.
@@ -91,28 +215,25 @@ def arping(ip_range):
     Args:
         ip_range (str): IP range to send ARP requests to.
 
+    Returns:
+        list: List of dictionaries containing the IP and MAC addresses of devices that respond.
     """
-    # Create ARP request packet
-    arp_request = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip_range)
+    # Send ARP request and receive responses using Scapy's arping function
+    responses, _ = scarping(ip_range, timeout=10, verbose=0)
 
-    # Send ARP request and receive responses
-    result = srp(arp_request, timeout=.5, verbose=0)[0]
-
-    # Parse the responses
+    # Parse the responses and store devices
     devices = []
-    for sent, received in result:
-        devices.append({'ip': received.psrc, 'mac': received.hwsrc})
+    for packet in responses:
+        devices.append({'ip': packet[1].psrc, 'mac': packet[1].hwsrc})
 
-    # Print the list of devices
-    print("IP Address\t\tMAC Address")
-    print("-----------------------------------------")
-    for device in devices:
-        print(f"{device['ip']}\t\t{device['mac']}")
+    return devices
 
 
 if __name__ == "__main__":
     # Get all IP ranges
     ips = get_all_ip_ranges()
+    devices = []
+    checked_networks = []
 
     # Iterate over each IP range and perform ARPING
     for ip in ips:
@@ -122,12 +243,34 @@ if __name__ == "__main__":
                 print(f"Skipping IP {ip[0]}/{ip[1]} since it's localhost.")
                 continue
             # Skip IP ranges with a mask length less than 24
-            if ip[1] < 24:
+            if ip[1] < 20:
                 print(
                     f"Skipping IP {ip[0]}/{ip[1]} since submask is small (taking too much time).")
                 continue
-            print(f"Performing ARPING on IP {ip[0]}/{ip[1]}.")
-            arping(f"{ip[0]}/{ip[1]}")
+
+            network = str(IPv4Network(
+                f"{ip[0]}/{ip[1]}", strict=False)).replace(".0/", ".1/")
+            if network in checked_networks:
+                print(f"Network {network} already scanned. Skipping.")
+                continue
+            checked_networks.append(network)
+            print(f"Performing ARPING on IP {network}.")
+
+            devices = merge_lists_of_dicts(
+                devices, arping(network), "ip")
         except Exception as e:
             print(e)
             print("Invalid network range for ARPING")
+
+    devices = sorted(devices, key=lambda x: inet_aton(x["ip"]))
+    devices = get_hostnames_from_ips(devices=devices)
+    devices = get_vendors_from_macs(devices=devices)
+
+    # Print the list of devices
+    table_data = []
+    # Start index from 1 instead of 0
+    for device in devices:
+        table_data.append([device['ip'], device['mac'],
+                          device['hostname'], device["vendor"]])
+    print(tabulate(table_data, headers=[
+          "IP Address", "MAC Address", "Hostname", "Vendor"], tablefmt="grid", showindex="always"))
