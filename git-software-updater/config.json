@@ -2,13 +2,13 @@
     "repositories": [
         {
             "url": "https://github.com/Elemento-Modular-Cloud/public-dummy.git",
-            "target_path": "./",
-            "branch": "main",
-            "force_reset": true
+            "target_path": "/Users/gabrielegaetanofronze/gitstuff",
+            "branch": "test",
+            "force_reset": false
         },
         {
             "url": "git@github.com:Elemento-Modular-Cloud/private-dummy.git",
-            "target_path": "./",
+            "target_path": "~/gitstuff",
             "branch": "main",
             "force_reset": false
         }
