@@ -1,0 +1,15 @@
+[Unit]
+Description=Git Software Updater Service for %i
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %I
+WorkingDirectory=%h
+Restart=always
+RestartSec=30
+User=%n  # %n is replaced by the actual user name of the service
+Group=%G  # %G is replaced by the actual group name of the service
+
+[Install]
+WantedBy=multi-user.target

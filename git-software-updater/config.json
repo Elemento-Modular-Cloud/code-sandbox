@@ -1,0 +1,16 @@
+{
+    "repositories": [
+        {
+            "url": "https://github.com/Elemento-Modular-Cloud/public-dummy.git",
+            "target_path": "./",
+            "branch": "main",
+            "force_reset": true
+        },
+        {
+            "url": "git@github.com:Elemento-Modular-Cloud/private-dummy.git",
+            "target_path": "./",
+            "branch": "main",
+            "force_reset": false
+        }
+    ]
+}
