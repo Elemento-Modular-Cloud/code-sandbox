@@ -2,3 +2,6 @@ scapy
 psutil
 tabulate
 zeroconf
+ipaddress
+futures
+psutil

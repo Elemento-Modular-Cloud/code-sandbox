@@ -3,13 +3,13 @@
         {
             "url": "https://github.com/Elemento-Modular-Cloud/public-dummy.git",
             "target_path": "~/gitstuff",
-            "branch": "test",
-            "force_reset": false
+            "branch": "main",
+            "force_reset": true
         },
         {
             "url": "git@github.com:Elemento-Modular-Cloud/private-dummy.git",
             "target_path": "~/gitstuff",
-            "branch": "main",
+            "branch": "test",
             "force_reset": true
         }
     ]

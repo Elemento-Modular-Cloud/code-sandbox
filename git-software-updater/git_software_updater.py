@@ -1,93 +1,182 @@
-import os
+from git import Repo, InvalidGitRepositoryError, cmd
 import json
-import logging
-from git import Repo, InvalidGitRepositoryError
-from shutil import move
+import os
+from shutil import rmtree, move
 
-# Initialize logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def get_final_target_path(target_path, repo_url):
+def get_target_path(target_path, repo_url):
+    # Extract repository name from the URL
     repo_name = repo_url.split('/')[-1].replace('.git', '')
     target_path = os.path.expanduser(target_path)
-    
+
+    # If target_path ends with the repo_name, use it directly
     if target_path.endswith(repo_name):
         return target_path
-    elif os.path.isdir(target_path):
+
+    # If target_path is a directory, append repo_name to the path
+    if os.path.isdir(target_path):
         return os.path.join(target_path, repo_name)
-    else:
-        return target_path
 
-def clone_or_recover_repo(repo_url, final_target_path, branch, ssh_key_path, force_reset=False):
-    logging.info(f"Processing repository: {repo_url} to {final_target_path}")
-    
-    if os.path.exists(final_target_path) and os.path.isdir(final_target_path):
+    return target_path  # Otherwise, return the original target_path
+
+
+def clone_repo(repo_url, target_path, branch, ssh_key_path):
+    if repo_url.startswith('https://'):
+        print("HTTPS")
+        print(target_path)
+        return Repo.clone_from(repo_url, target_path, branch=branch)
+    elif repo_url.startswith('git@'):
+        print("GIT")
+        if ssh_key_path:
+            return Repo.clone_from(repo_url, target_path, env={"GIT_SSH_COMMAND": f"ssh -i {ssh_key_path}"})
+        else:
+            return Repo.clone_from(repo_url, target_path)
+    else:
+        raise ValueError(f"Unsupported repository URL scheme for {repo_url}")
+
+
+def force_git_recover(final_target_path, repo_url, branch, force_reset=False):
+    if force_reset:
+        print("Reinitialising repo")
+        repo = Repo.init(final_target_path)
         try:
-            logging.info("Checking existing Git repository...")
-            repo = Repo(final_target_path)
-            if force_reset:
-                logging.warning("Force reset enabled. Moving existing repository to backup.")
-                move(final_target_path, f"{final_target_path}_bak")
-                return clone_repo(repo_url, final_target_path, branch, ssh_key_path)
-        except InvalidGitRepositoryError:
-            if force_reset:
-                logging.warning("Force reset enabled. Recovering Git repository...")
-                return force_git_recover(final_target_path, repo_url, branch)
-            else:
-                logging.error("Invalid Git repository detected without force reset enabled.")
-                raise
+            repo.create_remote(f"origin", url=repo_url)
+        except Exception:
+            pass
+        repo.remotes.origin.fetch()
+        repo.git.checkout(branch)
+        print("Reinit done")
+        return repo
     else:
-        logging.info("Target path does not exist. Creating directories...")
-        os.makedirs(final_target_path, exist_ok=True)
-        return clone_repo(repo_url, final_target_path, branch, ssh_key_path)
+        raise Exception(
+            "Enable force reset to allow automatic recovery. This will erase unstaged changes.")
 
-def clone_repo(repo_url, final_target_path, branch, ssh_key_path):
-    env = None
-    if repo_url.startswith('git@') and ssh_key_path:
-        env = {"GIT_SSH_COMMAND": f"ssh -i {ssh_key_path}"}
-    
-    logging.info(f"Cloning repository from {repo_url} to {final_target_path}...")
-    return Repo.clone_from(repo_url, final_target_path, branch=branch, env=env)
 
-def force_git_recover(final_target_path, repo_url, branch):
-    logging.info("Reinitialising Git repository...")
-    repo = Repo.init(final_target_path)
-    repo.create_remote(f"origin", url=repo_url)
-    repo.remotes.origin.fetch()
-    repo.git.checkout(branch)
-    logging.info("Reinitialization complete.")
-    return repo
+def clone_or_update_repo(repo_url,
+                         target_path,
+                         branch='master',
+                         commit=None,
+                         with_submodules=False,
+                         ssh_key_path=None,
+                         force_reset=False):
+    final_target_path = get_target_path(target_path, repo_url)
+
+    print(f"Starting cloning to {final_target_path}")
+    # Check if the directory is a valid Git repository
+    if os.path.exists(final_target_path):
+        print("Path exists")
+        try:
+            repo = Repo(final_target_path)
+            print("Repo found")
+        except Exception:
+            print("Path is not empty, but no git repo is found")
+            if force_reset:
+                print("Resetting path to allow cloning")
+                print(f"Unstaged changes moved to {final_target_path}_bak")
+                move(final_target_path, f"{final_target_path}_bak")
+                repo = clone_repo(repo_url, final_target_path,
+                                  branch, ssh_key_path)
+                print("Repo cloned")
+            else:
+                raise InvalidGitRepositoryError(
+                    "Enable force reset to allow automatic recovery. This will erase unstaged changes.")
+
+        if not repo.bare:
+            try:
+                print("Pulling")
+                repo.remotes.origin.pull()
+                print("Repo pulled")
+            except Exception:
+                repo = force_git_recover(final_target_path=final_target_path,
+                                         repo_url=repo_url,
+                                         branch=branch,
+                                         force_reset=force_reset)
+        else:
+            print(f"Empty or invalid repo path at {final_target_path}")
+            # If the directory exists but is not a valid Git repository
+            raise InvalidGitRepositoryError(
+                f"'{final_target_path}' is not a valid Git repository.")
+    else:
+        print("Repo doesn't exist")
+        os.mkdir(final_target_path)
+        os.chdir(final_target_path)
+        # Clone repository based on URL and optional SSH key
+        repo = clone_repo(repo_url, final_target_path, branch, ssh_key_path)
+        print("Repo cloned")
+
+    if force_reset:
+        if branch:
+            print(f"Resetting repo and checking out {branch}")
+            repo.git.reset('--hard', f'origin/{branch}')
+        else:
+            print("resetting repo")
+            repo.git.reset('--hard')
+    elif branch:
+        print(f"Checking out branch {branch}")
+        repo.git.checkout(branch)
+
+    if commit:
+        print(f"Checking out commit {commit}")
+        repo.git.checkout(commit)
+
+    if with_submodules:
+        print(f"Initializing all submodules")
+        repo.git.submodule('update', '--init', '--recursive')
+
+    print(
+        f"Successfully processed {repo_url} with branch {branch} and commit {commit} at {final_target_path}")
+
+
+def find_config_file():
+    # Check if config.json exists alongside the script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, 'config.json')
+
+    if os.path.exists(config_path):
+        return config_path
+
+    # Check if config.json exists in /etc/elemento/git_software_updater
+    etc_path = '/etc/elemento/git_software_updater/config.json'
+
+    if os.path.exists(etc_path):
+        return etc_path
+
+    # Return None if config.json is not found in both locations
+    return None
+
 
 def load_config():
-    config_paths = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json'),
-        '/etc/elemento/git_software_updater/config.json'
-    ]
-    
-    for path in config_paths:
-        if os.path.exists(path):
-            with open(path, 'r') as f:
-                logging.info(f"Loading configuration from {path}.")
-                return json.load(f)
-    logging.error("config.json not found in expected locations.")
-    raise FileNotFoundError("config.json not found in expected locations.")
+    config_file_path = find_config_file()
+
+    if config_file_path:
+        with open(config_file_path, 'r') as f:
+            return json.load(f)
+    else:
+        raise FileNotFoundError("config.json not found in expected locations.")
+
 
 def main():
-    logging.info("Starting Git software updater...")
-    
+    # Read JSON config file
     config = load_config()
-    
+
+    # Iterate through repositories and clone/update
     for repo_info in config.get('repositories', []):
         repo_url = repo_info.get('url')
         target_path = repo_info.get('target_path')
         branch = repo_info.get('branch', 'master')
-        ssh_key_path = repo_info.get('ssh_key_path')
-        force_reset = repo_info.get('force_reset', False)
-        
-        final_target_path = get_final_target_path(target_path, repo_url)
-        clone_or_recover_repo(repo_url, final_target_path, branch, ssh_key_path, force_reset)
-    
-    logging.info("Git software updater completed.")
+        commit = repo_info.get('commit', None)
+        submodules = repo_info.get('submodules', False)
+        ssh_key_path = repo_info.get('ssh_key_path', None)
+        force_reset = repo_info.get('force_reset', None)
+
+        clone_or_update_repo(repo_url=repo_url,
+                             target_path=target_path,
+                             branch=branch,
+                             commit=commit,
+                             with_submodules=submodules,
+                             ssh_key_path=ssh_key_path,
+                             force_reset=force_reset)
+
 
 if __name__ == "__main__":
     main()
