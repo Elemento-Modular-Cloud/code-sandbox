@@ -251,7 +251,7 @@ if __name__ == "__main__":
                 print(
                     f"Skipping IP {base_ip}/{subnet_mask} since it's localhost.")
                 continue
-            if subnet_chunks < 20:
+            if subnet_mask < 20:
                 print(
                     f"Skipping IP {base_ip}/{subnet_chunks} since submask is small (taking too much time).")
                 continue
