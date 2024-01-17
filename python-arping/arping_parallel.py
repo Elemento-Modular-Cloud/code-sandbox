@@ -253,7 +253,7 @@ if __name__ == "__main__":
                 continue
             if subnet_mask < 20:
                 print(
-                    f"Skipping IP {base_ip}/{subnet_chunks} since submask is small (taking too much time).")
+                    f"Skipping IP {base_ip}/{subnet_mask} since submask is small (taking too much time).")
                 continue
             ips = generate_ip_list(base_ip, subnet_mask)
             subnet_chunks += chunk_ips(ips, chunk_size)
