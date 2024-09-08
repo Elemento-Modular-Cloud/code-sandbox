@@ -3,10 +3,12 @@
 users:
   - default
   - name: elemento-root
-    password: "0000"
+    hashed_passwd: $6$CKnA40wxt8QQSJIe$hvmAASK7eFkV5kpu6or38u8fZw.wNNhLd4YFT4mNdA/avwFZ7vVD8xeABSKe0/ebyAOGsELGLVBtdF4Nc5pzf0
+    chpasswd: { expire: false }
     shell: /bin/bash
     lock_passwd: false
-    ssh_pwauth: True
-    chpasswd: { expire: False }
+    ssh_pwauth: true
     sudo: ALL=(ALL) NOPASSWD:ALL
     groups: users, admin
+    home: /home/elemento-root
+    sudo: true
