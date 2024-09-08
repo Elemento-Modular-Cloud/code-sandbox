@@ -20,5 +20,8 @@ qemu-img convert -f raw -O qcow2 -t none $output_path/cloud-init.img $output_pat
 # Convert the qcow2 image to iso
 genisoimage -output $output_path/cloud-init-iso.iso -volid cidata -joliet -rock $path_to_files/user-data $path_to_files/meta-data
 
+# Cleaning after myself
+rm $output_path/cloud-init.img
+
 echo "Cloud-init images created successfully at $output_path"
 tree $output_path
