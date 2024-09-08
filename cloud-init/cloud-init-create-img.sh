@@ -32,7 +32,7 @@ echo "Overlay layer creation complete."
 
 # Convert the qcow2 image to iso
 echo "Converting qcow2 image to iso format..."
-output=$(genisoimage -output $output_path/cloud-init-iso.iso -volid cidata -joliet -rock $path_to_files/user-data $path_to_files/meta-data 2>&1)
+output=$(genisoimage -output $output_path/cidata.iso -volid cidata -joliet -rock $path_to_files/user-data $path_to_files/meta-data 2>&1)
 echo "$output" | grep -oP '(?<=Added to ISO image: file )[^ ]+'
 echo "$output" | grep -oP '(?<=ISO image produced: )[^ ]+'
 echo "$output" | grep -oP '(?<=Written to medium : )[^ ]+'
@@ -51,7 +51,7 @@ echo -e "
 </disk>
 <disk type='file' device='cdrom'>
     <driver name='qemu' type='raw' discard='unmap'/>
-    <source file='$output_path/cloud-init-iso.iso'/>
+    <source file='$output_path/cidata.iso'/>
     <target dev='sda' bus='scsi'/>
     <readonly/>
     <address type='drive' controller='0' bus='0' target='0' unit='0'/>
