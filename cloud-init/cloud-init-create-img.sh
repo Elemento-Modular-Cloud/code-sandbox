@@ -38,11 +38,6 @@ echo "$output" | grep -oP '(?<=ISO image produced: )[^ ]+'
 echo "$output" | grep -oP '(?<=Written to medium : )[^ ]+'
 echo "Conversion complete."
 
-# Cleaning after myself
-echo "Cleaning up..."
-rm $output_path/cloud-init.img
-echo "Cleanup complete."
-
 echo "Cloud-init images created successfully at $output_path"
 echo "Listing files in $output_path..."
 tree $output_path
