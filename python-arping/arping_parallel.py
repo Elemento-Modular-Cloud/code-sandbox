@@ -238,7 +238,7 @@ if __name__ == "__main__":
         ips = get_all_ip_ranges()
         devices = []
         checked_networks = []
-        chunk_size = 4
+        chunk_size = 1
         subnet_chunks = []
         possible_ips = []
         table_data = []
@@ -247,16 +247,25 @@ if __name__ == "__main__":
         for base_ip, subnet_mask in ips:
             print(base_ip)
             print(subnet_mask)
+            print(checked_networks)
+            full_ip = f"{base_ip}/{subnet_mask}"
+            network = str(IPv4Network(full_ip, strict=False)).replace(".0/", ".1/")
+            if network in checked_networks:
+                print(
+                    f"Skipping network {network} since already processed.")
+                continue
             if base_ip == "127.0.0.1" or base_ip == "::1":
                 print(
-                    f"Skipping IP {base_ip}/{subnet_mask} since it's localhost.")
+                    f"Skipping IP {full_ip} since it's localhost.")
                 continue
             if subnet_mask < 20:
                 print(
-                    f"Skipping IP {base_ip}/{subnet_mask} since submask is small (taking too much time).")
+                    f"Skipping IP {full_ip} since submask is small (taking too much time).")
                 continue
+
             ips = generate_ip_list(base_ip, subnet_mask)
             subnet_chunks += chunk_ips(ips, chunk_size)
+            checked_networks.append(network)
 
             # Submit ARP scanning task for each subnet in parallel
             futures = [executor.submit(arp_scan, chunk)

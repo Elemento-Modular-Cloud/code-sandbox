@@ -1,0 +1,18 @@
+{
+    "repositories": [
+        {
+            "url": "git@github.com:Elemento-Modular-Cloud/elemento-monorepo-server.git",
+            "target_path": "/opt/elemento",
+            "branch": "main",
+            "force_reset": true,
+            "submodules": true
+        },
+        {
+            "url": "git@github.com:Elemento-Modular-Cloud/elemento-monorepo-client.git",
+            "target_path": "/opt/elemento",
+            "branch": "main",
+            "force_reset": true,
+            "submodules": true
+        }
+    ]
+}
