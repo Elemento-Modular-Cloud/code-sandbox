@@ -20,7 +20,13 @@ echo "Download complete."
 
 # Create an overlay layer for the cloud-init image
 echo "Creating an overlay layer for the cloud-init image..."
-output=$(qemu-img create -f qcow2 -o backing_file=$output_path/cloud-init.img $output_path/cloud-init.qcow2 2>&1)
+format=$(qemu-img info $output_path/cloud-init.img | grep 'file format' | awk '{print $3}')
+if [ "$format" == "raw" ]; then
+    qemu-img convert -f raw -O qcow2 $output_path/cloud-init.img $output_path/cloud-init.qcow2
+    mv $output_path/cloud-init.qcow2 $output_path/cloud-init.img
+    rm $output_path/cloud-init.qcow2
+fi
+output=$(qemu-img create -f qcow2 -F $format -o backing_file=$output_path/cloud-init.img $output_path/cloud-init.qcow2 2>&1)
 echo "$output"
 echo "Overlay layer creation complete."
 
