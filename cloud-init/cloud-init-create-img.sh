@@ -14,10 +14,10 @@ output_path=$3
 # Download the cloud-init image
 wget -O $output_path/cloud-init.img $cloud_init_image_url
 
-# Create a qcow2 overlay image
-qemu-img create -f qcow2 -b $output_path/cloud-init.img $output_path/cloud-init-overlay.qcow2
+# Convert the cloud-init image to qcow2 format
+qemu-img convert -f raw -O qcow2 -t none $output_path/cloud-init.img $output_path/cloud-init.qcow2
 
-# Convert the qcow2 overlay image to iso
+# Convert the qcow2 image to iso
 genisoimage -output $output_path/cloud-init-iso.iso -volid cidata -joliet -rock $path_to_files/user-data $path_to_files/meta-data
 
 echo "Cloud-init images created successfully at $output_path"
