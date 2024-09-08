@@ -3,7 +3,8 @@
 users:
   - default
   - name: elemento-root
-    hashed_passwd: $6$CKnA40wxt8QQSJIe$hvmAASK7eFkV5kpu6or38u8fZw.wNNhLd4YFT4mNdA/avwFZ7vVD8xeABSKe0/ebyAOGsELGLVBtdF4Nc5pzf0
+    passwd: $6$CKnA40wxt8QQSJIe$hvmAASK7eFkV5kpu6or38u8fZw.wNNhLd4YFT4mNdA/avwFZ7vVD8xeABSKe0/ebyAOGsELGLVBtdF4Nc5pzf0
+    # plain_text_passwd: "0000"
     chpasswd: { expire: false }
     shell: /bin/bash
     lock_passwd: false
