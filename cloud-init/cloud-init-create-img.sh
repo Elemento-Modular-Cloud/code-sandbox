@@ -18,11 +18,11 @@ echo "$output" | grep -oP '(?<=Saving to: )[^ ]+'
 echo "$output" | grep -oP '(?<=\()[^ ]+(?= saved)'
 echo "Download complete."
 
-# Convert the cloud-init image to qcow2 format
-echo "Converting cloud-init image to qcow2 format..."
-output=$(qemu-img convert -f raw -O qcow2 $output_path/cloud-init.img $output_path/cloud-init.qcow2 2>&1)
+# Create an overlay layer for the cloud-init image
+echo "Creating an overlay layer for the cloud-init image..."
+output=$(qemu-img create -f qcow2 -o backing_file=$output_path/cloud-init.img $output_path/cloud-init.qcow2 2>&1)
 echo "$output"
-echo "Conversion complete."
+echo "Overlay layer creation complete."
 
 # Convert the qcow2 image to iso
 echo "Converting qcow2 image to iso format..."
