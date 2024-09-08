@@ -3,8 +3,7 @@
 users:
   - default
   - name: elemento-root
-    passwd: "\$6\$L\/Reu8G8V9eorV08\$LrloPd9F41lAgZfKOcqfUn8D8lhGdgfvt19CnDETWe9Biqw9PgzfPqtLIjQq9VA78TcBMY2Eu4zWHAPBAjYxN."
-    hashed_passwd: "\$6\$L\/Reu8G8V9eorV08\$LrloPd9F41lAgZfKOcqfUn8D8lhGdgfvt19CnDETWe9Biqw9PgzfPqtLIjQq9VA78TcBMY2Eu4zWHAPBAjYxN."
+    password: "0000"
     shell: /bin/bash
     lock_passwd: false
     ssh_pwauth: True
