@@ -38,6 +38,25 @@ echo "$output" | grep -oP '(?<=ISO image produced: )[^ ]+'
 echo "$output" | grep -oP '(?<=Written to medium : )[^ ]+'
 echo "Conversion complete."
 
+echo -e "
+<disk type='file' device='disk'>
+    <driver name='qemu' type='qcow2'/>
+    <source file='$output_path/cloud-init.qcow2'/>
+    <backingStore type='file'>
+        <format type='qcow2'/>
+        <source file='$output_path/cloud-init.img'/>
+    </backingStore>
+    <target dev='vda' bus='virtio'/>
+    <address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/>
+</disk>
+<disk type='file' device='cdrom'>
+    <driver name='qemu' type='raw' discard='unmap'/>
+    <source file='$output_path/cloud-init-iso.iso'/>
+    <target dev='sda' bus='scsi'/>
+    <readonly/>
+    <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+</disk>" > $output_path/cloud-init.xml
+
 echo "Cloud-init images created successfully at $output_path"
 echo "Listing files in $output_path..."
 tree $output_path
