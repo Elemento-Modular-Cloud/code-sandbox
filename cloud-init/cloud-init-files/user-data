@@ -1,10 +1,13 @@
 #cloud-config
+
 users:
-  - name: ubuntu
+  - default
+  - name: elemento-root
+    passwd: "\$6\$L\/Reu8G8V9eorV08\$LrloPd9F41lAgZfKOcqfUn8D8lhGdgfvt19CnDETWe9Biqw9PgzfPqtLIjQq9VA78TcBMY2Eu4zWHAPBAjYxN."
+    hashed_passwd: "\$6\$L\/Reu8G8V9eorV08\$LrloPd9F41lAgZfKOcqfUn8D8lhGdgfvt19CnDETWe9Biqw9PgzfPqtLIjQq9VA78TcBMY2Eu4zWHAPBAjYxN."
     shell: /bin/bash
-    sudo: ['ALL=(ALL) NOPASSWD:ALL']
-ssh_pwauth: True ## This line enables ssh password authentication
-chpasswd:
-  list: |
-    ubuntu:ubuntu ## Overriding default username, password
-  expire: True ## Forcing user to change the default password at first login
+    lock_passwd: false
+    ssh_pwauth: True
+    chpasswd: { expire: False }
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
