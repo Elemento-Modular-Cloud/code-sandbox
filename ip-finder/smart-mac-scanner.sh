@@ -4,10 +4,18 @@
 # Input parameters and configuration
 mac=""                 # MAC address to search for
 json_output=false     # JSON output flag
+quiet_mode=false      # Quiet mode flag
 default_device="br0"   # Default network bridge device
 packets=1             # Number of ARP packets to capture
 trials=50            # Maximum number of attempts to find the IP
 timeout=60s          # Timeout for network operations
+
+# Custom echo function that respects quiet mode
+log_msg() {
+    if ! $quiet_mode; then
+        echo "$@"
+    fi
+}
 
 # Validate command line arguments
 check_usage() {
@@ -15,6 +23,7 @@ check_usage() {
         echo "Usage: $0 [-j|--json] <mac>"
         echo "Options:"
         echo "  -j, --json    Output results in JSON format"
+        echo "  -q, --quiet   Suppress output unless in JSON mode"
         exit 1
     fi
 }
@@ -24,6 +33,10 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         -j|--json)
             json_output=true
+            shift
+            ;;
+        -q|--quiet)
+            quiet_mode=true
             shift
             ;;
         *)
@@ -73,11 +86,7 @@ listen_for_arp_replies() {
 device=$(find_local_device "$mac")
 
 if [ -z "$device" ]; then
-    if $json_output; then
-        echo '{"status": "not_local", "message": "Endpoint is not on this host"}'
-    else
-        echo "Endpoint with MAC address $mac is not on this host"
-    fi
+    log_msg "Endpoint with MAC address $mac is not on this host"
     
     # 2. If not local, check the ARP cache for the IP
     ip_address=$(find_ip_in_arp_cache "$mac")
@@ -88,27 +97,19 @@ if [ -z "$device" ]; then
     fi
 
     if [ -z "$ip_address" ]; then
-        if $json_output; then
-            echo '{"status": "error", "message": "No IP address found"}'
-        else
-            echo "No IP address found for $mac"
-        fi
+        log_msg "No IP address found for $mac"
         exit 1
     fi
-    if $json_output; then
-        echo "{\"status\": \"success\", \"mac\": \"$mac\", \"ip\": \"$ip_address\"}"
-    else
-        echo "Found IP address for $mac: $ip_address"
-    fi
+    log_msg "Found IP address for $mac: $ip_address"
     exit 0
 fi
 
 # 4. If MAC is local, monitor ARP traffic to find its IP
-echo "Endpoint with MAC address $mac is on this host, backed by device $device"
+log_msg "Endpoint with MAC address $mac is on this host, backed by device $device"
 
 # Make multiple attempts to capture ARP traffic
 for ((i=1; i<=trials; i++)); do
-    echo "Attempt $i: No IP address found yet..."
+    log_msg "Attempt $i: No IP address found yet..."
     ip_address=$(listen_for_arp_replies "$device" "$mac" "$packets" "$timeout")
     if [ ! -z "$ip_address" ]; then
         break
@@ -117,17 +118,13 @@ done
 
 # If no IP address found after all attempts, exit with error
 if [ -z "$ip_address" ]; then
-    if $json_output; then
-        echo '{"status": "error", "message": "No IP address found after all attempts"}'
-    else
-        echo "No IP address found after 10 attempts"
-    fi
+    log_msg "No IP address found after 10 attempts"
     exit 1
 fi
 
 # Output the found IP address
 if $json_output; then
-    echo "{\"status\": \"success\", \"mac\": \"$mac\", \"ip\": \"$ip_address\", \"device\": \"$device\"}"
+    echo "{\"mac\":\"$mac\",\"ip\":\"$ip_address\",\"device\":\"$device\"}"
 else
     echo "Found IP address for $mac: $ip_address"
 fi
