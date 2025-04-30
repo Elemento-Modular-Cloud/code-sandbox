@@ -50,23 +50,23 @@ create_port_mapping() {
     # Add the service to the public zone
     firewall-cmd --permanent --zone=public --add-service="$service_name"
 
-    # Reload the firewall to apply changes
-    firewall-cmd --reload
-
-    echo "Firewall rule added for $service_name"
-
-    # Remove any existing rules for this host port
-    iptables -t nat -D PREROUTING -p tcp --dport "$host_port" -j DNAT --to-destination "$target_ip:$target_port" 2>/dev/null
+    # Add the forward port rule to firewalld instead of iptables
+    rule_name="forward-port-${host_port}-to-${target_ip//\./_}-${target_port}"
     
-    # Add the new port forwarding rule with optional source network exclusion
+    # Remove any existing rules with this name first
+    firewall-cmd --permanent --remove-rich-rule="rule name=\"${rule_name}\" family=ipv4 source NOT address=\"${source_network}\" forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\"" 2>/dev/null
+    firewall-cmd --permanent --remove-forward-port="port=${host_port}:proto=tcp:toaddr=${target_ip}:toport=${target_port}" 2>/dev/null
+
     if [ -n "$source_network" ]; then
-        iptables -t nat -A PREROUTING ! -s "$source_network" -p tcp --dport "$host_port" -j DNAT --to-destination "$target_ip:$target_port"
+        # For source network exclusion, use a rich rule with name
+        firewall-cmd --permanent --add-rich-rule="rule name=\"${rule_name}\" family=ipv4 source NOT address=\"${source_network}\" forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\""
     else
-        iptables -t nat -A PREROUTING -p tcp --dport "$host_port" -j DNAT --to-destination "$target_ip:$target_port"
+        # Simple forward port without source restriction
+        firewall-cmd --permanent --add-forward-port="port=${host_port}:proto=tcp:toaddr=${target_ip}:toport=${target_port}"
     fi
 
-    # Enable forwarding for the specific port
-    iptables -A FORWARD -p tcp -d "$target_ip" --dport "$target_port" -j ACCEPT
+    # Reload to apply the changes
+    firewall-cmd --reload
     
     echo "Successfully created mapping for $host_port -> $target_ip:$target_port"
     return 0
@@ -177,6 +177,7 @@ remove_port_mapping() {
 
     # Remove firewall service
     service_name="port-mapping-${host_port}-to-${target_ip//\./_}-${target_port}"
+    rule_name="forward-port-${host_port}-to-${target_ip//\./_}-${target_port}"
     
     # Remove service from public zone
     firewall-cmd --permanent --zone=public --remove-service="$service_name"
@@ -184,12 +185,13 @@ remove_port_mapping() {
     # Remove the service completely
     firewall-cmd --permanent --delete-service="$service_name"
     
+    # Remove any forward port rules (both named rich rules and simple forward ports)
+    firewall-cmd --permanent --remove-rich-rule="rule name=\"${rule_name}\" family=ipv4 forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\"" 2>/dev/null
+    firewall-cmd --permanent --remove-rich-rule="rule name=\"${rule_name}\" family=ipv4 source NOT address=\"${source_network}\" forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\"" 2>/dev/null
+    firewall-cmd --permanent --remove-forward-port="port=${host_port}:proto=tcp:toaddr=${target_ip}:toport=${target_port}" 2>/dev/null
+    
     # Reload firewall to apply changes
     firewall-cmd --reload
-
-    # Remove iptables rules
-    iptables -t nat -D PREROUTING -p tcp --dport "$host_port" -j DNAT --to-destination "$target_ip:$target_port" 2>/dev/null
-    iptables -D FORWARD -p tcp -d "$target_ip" --dport "$target_port" -j ACCEPT 2>/dev/null
     
     echo "Successfully removed mapping for $host_port -> $target_ip:$target_port"
     return 0
