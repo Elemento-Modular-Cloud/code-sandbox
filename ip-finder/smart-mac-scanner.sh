@@ -81,6 +81,22 @@ listen_for_arp_replies() {
     timeout "$timeout" tcpdump -l -i "$device" -c "$packets" "arp[6:2] = 2" 2>/dev/null | grep -i "is-at $mac" | awk '{print $4}'
 }
 
+# Function to resolve FQDN to IP address
+resolve_fqdn() {
+    local addr=$1
+    # Check if input looks like a hostname (contains alphabetic characters)
+    if [[ $addr =~ [a-zA-Z] ]]; then
+        # Try to resolve the hostname using dig, fall back to original if it fails
+        local resolved=$(dig +short "$addr" | grep -v '\.$' | head -n1)
+        if [ ! -z "$resolved" ]; then
+            echo "$resolved"
+            return
+        fi
+    fi
+    # Return original address if it's already an IP or if resolution failed
+    echo "$addr"
+}
+
 # Main algorithm flow:
 # 1. First, check if the MAC address belongs to a local interface
 device=$(find_local_device "$mac")
@@ -124,7 +140,13 @@ fi
 
 # Output the found IP address
 if $json_output; then
-    echo "{\"mac\":\"$mac\",\"ip\":\"$ip_address\",\"device\":\"$device\"}"
+    resolved_ip=$(resolve_fqdn "$ip_address")
+    echo "{\"mac\":\"$mac\",\"ip\":\"$resolved_ip\",\"original_address\":\"$ip_address\",\"device\":\"$device\"}"
 else
-    echo "Found IP address for $mac: $ip_address"
+    resolved_ip=$(resolve_fqdn "$ip_address")
+    if [ "$resolved_ip" != "$ip_address" ]; then
+        echo "Found IP address for $mac: $resolved_ip (resolved from $ip_address)"
+    else
+        echo "Found IP address for $mac: $ip_address"
+    fi
 fi
