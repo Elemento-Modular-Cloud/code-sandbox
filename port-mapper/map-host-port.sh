@@ -28,6 +28,42 @@ validate_ip() {
     return 0
 }
 
+setup_fw() {
+    # Check if firewalld is running
+    if ! systemctl is-active --quiet firewalld; then
+        echo "Firewalld is not running. Attempting to start..."
+        systemctl start firewalld
+        if [ $? -ne 0 ]; then
+            echo "Failed to start firewalld"
+            return 1
+        fi
+    fi
+
+    # Enable firewalld to start on boot
+    systemctl enable firewalld
+
+    # Check if masquerade is enabled
+    if [ "$(firewall-cmd --query-masquerade)" != "yes" ]; then
+        echo "Masquerade is not enabled. Attempting to enable..."
+        firewall-cmd --permanent --zone=public --add-masquerade
+        firewall-cmd --reload
+    fi
+
+    return 0
+}
+
+firewall-cmd-wrapper() {
+    local output=$(firewall-cmd "$@" 2>&1)
+    
+    if [[ "$output" != *"success"* ]]; then
+        echo -e "\e[31mError running command:\e[0m firewall-cmd $@" >&2
+        echo -e "\e[31m$output\e[0m" >&2
+        return 1
+    fi
+
+    return 0
+}
+
 # Function to create port mapping
 create_port_mapping() {
     local host_port=$1
@@ -43,32 +79,81 @@ create_port_mapping() {
 
     # Add a new service for the port mapping
     service_name="port-mapping-${host_port}-to-${target_ip//\./_}-${target_port}"
-    firewall-cmd --permanent --new-service="$service_name"
-    firewall-cmd --permanent --service="$service_name" --add-port="$host_port/tcp"
-    firewall-cmd --permanent --service="$service_name" --set-description="Port mapping from $host_port to $target_ip:$target_port"
+    
+    local exit_code=0
+    firewall-cmd-wrapper --permanent --new-service="$service_name"
+    exit_code=$((exit_code + $?))
+    firewall-cmd-wrapper --permanent --service="$service_name" --add-port="$host_port/tcp"
+    exit_code=$((exit_code + $?))
+    firewall-cmd-wrapper --permanent --service="$service_name" --set-description="Port mapping from $host_port to $target_ip:$target_port"
+    exit_code=$((exit_code + $?))
 
     # Add the service to the public zone
-    firewall-cmd --permanent --zone=public --add-service="$service_name"
-
-    # Add the forward port rule to firewalld instead of iptables
-    rule_name="forward-port-${host_port}-to-${target_ip//\./_}-${target_port}"
-    
-    # Remove any existing rules with this name first
-    firewall-cmd --permanent --remove-rich-rule="rule name=\"${rule_name}\" family=ipv4 source NOT address=\"${source_network}\" forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\"" 2>/dev/null
-    firewall-cmd --permanent --remove-forward-port="port=${host_port}:proto=tcp:toaddr=${target_ip}:toport=${target_port}" 2>/dev/null
+    firewall-cmd-wrapper --permanent --zone=public --add-service="$service_name"
+    exit_code=$((exit_code + $?))
 
     if [ -n "$source_network" ]; then
         # For source network exclusion, use a rich rule with name
-        firewall-cmd --permanent --add-rich-rule="rule name=\"${rule_name}\" family=ipv4 source NOT address=\"${source_network}\" forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\""
+        firewall-cmd-wrapper --permanent --add-rich-rule="rule family=ipv4 source NOT address=\"${source_network}\" forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\""
+        exit_code=$((exit_code + $?))
     else
         # Simple forward port without source restriction
-        firewall-cmd --permanent --add-forward-port="port=${host_port}:proto=tcp:toaddr=${target_ip}:toport=${target_port}"
+        firewall-cmd-wrapper --permanent --add-rich-rule="rule family=ipv4 forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\""
+        exit_code=$((exit_code + $?))
     fi
 
     # Reload to apply the changes
-    firewall-cmd --reload
+    firewall-cmd-wrapper --reload
+    exit_code=$((exit_code + $?))
     
+    if [ $exit_code -ne 0 ]; then
+        echo -e "\e[31mError creating port mapping: $host_port -> $target_ip:$target_port\e[0m"
+        return 1
+    fi
+
     echo "Successfully created mapping for $host_port -> $target_ip:$target_port"
+    return 0
+}
+
+
+# Function to remove port mapping
+remove_port_mapping() {
+    local host_port=$1
+    local target_ip=$2
+    local target_port=$3
+    local source_network=${4:-""}  # Optional source network to exclude
+
+    # Remove firewall service
+    service_name="port-mapping-${host_port}-to-${target_ip//\./_}-${target_port}"
+    
+    local exit_code=0
+    # Remove service from public zone
+    firewall-cmd-wrapper --permanent --zone=public --remove-service="$service_name"
+    exit_code=$((exit_code + $?))
+
+    # Remove the service completely
+    firewall-cmd-wrapper --permanent --delete-service="$service_name"
+    exit_code=$((exit_code + $?))
+    
+    # Remove any forward port rules (both named rich rules and simple forward ports)
+    if [ -n "$source_network" ]; then
+        firewall-cmd-wrapper --permanent --remove-rich-rule="rule family=ipv4 source NOT address=\"${source_network}\" forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\""
+        exit_code=$((exit_code + $?))
+    else
+        firewall-cmd-wrapper --permanent --remove-rich-rule="rule family=ipv4 forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\""
+        exit_code=$((exit_code + $?))
+    fi
+    
+    # Reload firewall to apply changes
+    firewall-cmd-wrapper --reload
+    exit_code=$((exit_code + $?))
+    
+    if [ $exit_code -ne 0 ]; then
+        echo -e "\e[31mError removing port mapping: $host_port -> $target_ip:$target_port\e[0m"
+        return 1
+    fi
+
+    echo "Successfully removed mapping for $host_port -> $target_ip:$target_port"
     return 0
 }
 
@@ -163,37 +248,13 @@ process_port_mappings() {
         # Create the port mapping using iptables
         echo "Creating port mapping: Host port $host_port -> $target_ip:$target_port"
         create_port_mapping "$host_port" "$target_ip" "$target_port"
+        if [ $? -ne 0 ]; then
+            echo -e "\e[31mError creating port mapping. Aborting!\e[0m"
+            return 1
+        fi
     done
 
     echo "Port mapping complete!"
-    return 0
-}
-
-# Function to remove port mapping
-remove_port_mapping() {
-    local host_port=$1
-    local target_ip=$2
-    local target_port=$3
-
-    # Remove firewall service
-    service_name="port-mapping-${host_port}-to-${target_ip//\./_}-${target_port}"
-    rule_name="forward-port-${host_port}-to-${target_ip//\./_}-${target_port}"
-    
-    # Remove service from public zone
-    firewall-cmd --permanent --zone=public --remove-service="$service_name"
-    
-    # Remove the service completely
-    firewall-cmd --permanent --delete-service="$service_name"
-    
-    # Remove any forward port rules (both named rich rules and simple forward ports)
-    firewall-cmd --permanent --remove-rich-rule="rule name=\"${rule_name}\" family=ipv4 forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\"" 2>/dev/null
-    firewall-cmd --permanent --remove-rich-rule="rule name=\"${rule_name}\" family=ipv4 source NOT address=\"${source_network}\" forward-port port=\"${host_port}\" protocol=\"tcp\" to-port=\"${target_port}\" to-addr=\"${target_ip}\"" 2>/dev/null
-    firewall-cmd --permanent --remove-forward-port="port=${host_port}:proto=tcp:toaddr=${target_ip}:toport=${target_port}" 2>/dev/null
-    
-    # Reload firewall to apply changes
-    firewall-cmd --reload
-    
-    echo "Successfully removed mapping for $host_port -> $target_ip:$target_port"
     return 0
 }
 
@@ -257,6 +318,10 @@ cleanup_port_mappings() {
         # Remove the port mapping
         echo "Removing port mapping: Host port $host_port -> $target_ip:$target_port"
         remove_port_mapping "$host_port" "$target_ip" "$target_port"
+        if [ $? -ne 0 ]; then
+            echo -e "\e[31mError removing port mappings. Aborting!\e[0m"
+            return 1
+        fi
     done
 
     echo "Port mapping cleanup complete!"
@@ -268,5 +333,6 @@ if [ "$1" = "--cleanup" ]; then
     shift  # Remove --cleanup from arguments
     cleanup_port_mappings "$@"
 else
+    setup_fw || exit 1
     process_port_mappings "$@"
 fi
