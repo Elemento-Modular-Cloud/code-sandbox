@@ -116,7 +116,14 @@ if [ -z "$device" ]; then
         log_msg "No IP address found for $mac"
         exit 1
     fi
-    log_msg "Found IP address for $mac: $ip_address"
+
+    resolved_ip=$(resolve_fqdn "$ip_address")
+    
+    if $json_output; then
+        echo "{\"mac_address\":\"$mac\",\"ip_address\":\"$resolved_ip\",\"original_address\":\"$ip_address\"}"
+    else
+        log_msg "Found IP address for $mac: $ip_address"
+    fi
     exit 0
 fi
 
@@ -141,7 +148,7 @@ fi
 # Output the found IP address
 if $json_output; then
     resolved_ip=$(resolve_fqdn "$ip_address")
-    echo "{\"mac\":\"$mac\",\"ip\":\"$resolved_ip\",\"original_address\":\"$ip_address\",\"device\":\"$device\"}"
+    echo "{\"mac_address\":\"$mac\",\"ip_address\":\"$resolved_ip\",\"original_address\":\"$ip_address\",\"device\":\"$device\"}"
 else
     resolved_ip=$(resolve_fqdn "$ip_address")
     if [ "$resolved_ip" != "$ip_address" ]; then
