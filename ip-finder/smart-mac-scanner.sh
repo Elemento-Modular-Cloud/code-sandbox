@@ -52,6 +52,34 @@ find_local_device() {
     ip link | grep -i "$mac" -B1 | head -n1 | awk -F': ' '{print $2}' | awk -F'@' '{print $1}'
 }
 
+find_libvirt_bridge() {
+    local mac=$1
+    for VM in $(virsh list --all --name); do
+        [ -z "$VM" ] && continue
+        if virsh dumpxml "$VM" | grep -qi "$mac"; then
+            NETWORK=$(virsh dumpxml "$VM" | awk -v mac="$mac" '
+            /<interface/,/<\/interface>/ {
+                if ($0 ~ mac) found=1;
+                if (found && /<source/) {
+                if (match($0, /bridge=["'\''][^"'\'']+["'\'']/)) {
+                    network = substr($0, RSTART + 8, RLENGTH - 9);
+                    print network;
+                    found=0;
+                }
+                }
+            }'
+            )
+            
+            if [ -n "$NETWORK" ]; then
+                echo "$NETWORK"
+                return 0  # Found on virbr interface
+            fi
+        fi
+    done
+
+    return 1  # Not found on virbr interface
+}
+
 # Search for IP address in the system's ARP cache
 find_ip_in_arp_cache() {
     local mac=$1
@@ -100,9 +128,19 @@ resolve_fqdn() {
 # Main algorithm flow:
 # 1. First, check if the MAC address belongs to a local interface
 device=$(find_local_device "$mac")
+is_virbr=false
 
 if [ -z "$device" ]; then
-    log_msg "Endpoint with MAC address $mac is not on this host"
+    device=$(find_libvirt_bridge "$mac")
+    is_virbr=true
+fi
+
+if [ -z "$device" ] || [ "$is_virbr" = true ]; then
+    if [ "$is_virbr" = true ]; then
+        log_msg "Endpoint with MAC address $mac is on a libvirt bridge named $device"
+    else
+        log_msg "Endpoint with MAC address $mac is not on this host"
+    fi
     
     # 2. If not local, check the ARP cache for the IP
     ip_address=$(find_ip_in_arp_cache "$mac")
