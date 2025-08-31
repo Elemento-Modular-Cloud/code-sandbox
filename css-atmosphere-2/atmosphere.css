@@ -101,27 +101,51 @@ body {
 .planet {
     width: var(--planet-size);
     height: var(--planet-size);
-    background: radial-gradient(
-        circle at 30% 30%,
-        #73b0f5 0%,
-        #3971ea 35%,
-        #1e40af 70%,
-        #1e3a8a 100%
-    );
+    background: 
+        /* Base planet gradient with more dynamic colors */
+        radial-gradient(
+            circle at 35% 35%,
+            #87CEEB 0%,
+            #4682B4 25%,
+            #1E3A8A 50%,
+            #0F172A 75%,
+            #020617 100%
+        ),
+        /* Additional atmospheric bands */
+        radial-gradient(
+            ellipse at 40% 40%,
+            transparent 0%,
+            rgba(135, 206, 235, 0.3) 20%,
+            transparent 40%,
+            rgba(70, 130, 180, 0.2) 60%,
+            transparent 80%
+        ),
+        /* Cloud layer variations */
+        radial-gradient(
+            ellipse at 60% 30%,
+            transparent 0%,
+            rgba(255, 255, 255, 0.1) 15%,
+            transparent 30%,
+            rgba(173, 216, 230, 0.15) 45%,
+            transparent 65%
+        );
     border-radius: 50%;
-    box-shadow: inset -10px -10px 20px rgba(0, 18, 89, 0.3);
+    box-shadow: 
+        inset -15px -15px 30px rgba(0, 18, 89, 0.4),
+        inset 5px 5px 15px rgba(135, 206, 235, 0.2),
+        -10px -10px 30px rgba(30, 143, 255, 0.929);
 }
 
 .planet-shadow {
     width: calc(var(--atmosphere-size) * 2);
     height: calc(var(--atmosphere-size) * 2);
-    background: rgba(0, 0, 0, 0.97);
+    background: rgba(0, 0, 0, 0.95);
     border-radius: 50%;
     z-index: 10;
     transform-origin: center;
     transform: translate(-80%, -20%) rotate(55deg);
-    filter: blur(calc(var(--planet-size) * .05));
-    mix-blend-mode: darken;
+    filter: blur(calc(var(--planet-size) * .04));
+    mix-blend-mode: multiply;
 }
 
 .planet::before {
@@ -136,21 +160,92 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 50%;
-    filter: brightness(.4) contrast(1);
-    mix-blend-mode: darken;
-    opacity: 0.5;
+    filter: brightness(0.6) contrast(1.2) saturate(1.3);
+    mix-blend-mode: overlay;
+    opacity: 0.7;
     z-index: 10;
 }
 
 .planet::after {
     content: "";
     position: absolute;
-    top:-3px;
+    top: -2px;
     left: -2px;
-    width: calc(var(--planet-size) * 1.01);
+    width: calc(var(--planet-size) + 4px);
+    height: calc(var(--planet-size) + 4px);
+    border-radius: 50%;
+    background: 
+        radial-gradient(
+            circle at 35% 35%,
+            rgba(135, 206, 235, 0.8) 0%,
+            rgba(70, 130, 180, 0.4) 50%,
+            transparent 100%
+        );
+    mix-blend-mode: soft-light;
+    filter: blur(2px);
+    z-index: 5;
+}
+
+/* Add additional surface detail layers */
+.planet-container::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--planet-size);
     height: var(--planet-size);
     border-radius: 50%;
-    border: 1px solid rgb(59, 151, 255);
-    box-shadow: inset 0 0 2px rgb(0, 183, 255), inset 0 0 2px rgb(0, 183, 255), inset 0 0 2px rgb(0, 183, 255);
-    filter: blur(3px);
+    background: 
+        /* Storm systems and atmospheric bands */
+        radial-gradient(
+            ellipse at 45% 40%,
+            transparent 0%,
+            rgba(25, 25, 112, 0.3) 20%,
+            transparent 40%,
+            rgba(70, 130, 180, 0.2) 60%,
+            transparent 80%
+        ),
+        /* High-altitude clouds */
+        radial-gradient(
+            ellipse at 70% 25%,
+            transparent 0%,
+            rgba(255, 255, 255, 0.15) 10%,
+            transparent 25%,
+            rgba(173, 216, 230, 0.1) 40%,
+            transparent 60%
+        ),
+        /* Equatorial bands */
+        radial-gradient(
+            ellipse at 50% 50%,
+            transparent 0%,
+            transparent 30%,
+            rgba(30, 144, 255, 0.2) 45%,
+            rgba(25, 25, 112, 0.3) 55%,
+            transparent 70%
+        );
+    mix-blend-mode: soft-light;
+    opacity: 0.8;
+    z-index: 8;
+}
+
+/* Add atmospheric highlights */
+.planet-container::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--planet-size);
+    height: var(--planet-size);
+    border-radius: 50%;
+    background: 
+        radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(173, 216, 230, 0.05) 30%,
+            transparent 60%
+        );
+    mix-blend-mode: screen;
+    z-index: 9;
 }
