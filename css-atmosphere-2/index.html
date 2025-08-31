@@ -1,13 +1,606 @@
 <html>
     <head>
-        <title>CSS Atmosphere 2</title>
+        <title>CSS Atmosphere 2 - Interactive Controls</title>
         <link rel="stylesheet" href="atmosphere.css">
+        <style>
+            .control-panel {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.9);
+                padding: 20px;
+                border-radius: 10px;
+                color: white;
+                font-family: Arial, sans-serif;
+                z-index: 1000;
+                max-height: 90vh;
+                overflow-y: auto;
+                width: 300px;
+                border: 1px solid #333;
+            }
+            
+            .control-panel h3 {
+                margin: 0 0 15px 0;
+                color: #87CEEB;
+                border-bottom: 1px solid #333;
+                padding-bottom: 5px;
+            }
+            
+            .control-group {
+                margin-bottom: 20px;
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 5px;
+            }
+            
+            .control-group h4 {
+                margin: 0 0 10px 0;
+                color: #4682B4;
+                font-size: 14px;
+            }
+            
+            .slider-container {
+                margin-bottom: 10px;
+            }
+            
+            .slider-container label {
+                display: block;
+                margin-bottom: 5px;
+                font-size: 12px;
+                color: #ccc;
+            }
+            
+            .slider-container input[type="range"] {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .slider-container input[type="color"] {
+                width: 50px;
+                height: 30px;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+            }
+            
+            .value-display {
+                font-size: 11px;
+                color: #888;
+                margin-left: 10px;
+            }
+            
+            .preset-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 5px;
+                margin-bottom: 15px;
+            }
+            
+            .preset-buttons button {
+                padding: 8px;
+                background: #1E3A8A;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 11px;
+                transition: background 0.3s;
+            }
+            
+            .preset-buttons button:hover {
+                background: #4682B4;
+            }
+            
+            .preset-buttons button.active {
+                background: #87CEEB;
+                color: #000;
+            }
+            
+            .reset-button {
+                width: 100%;
+                padding: 10px;
+                background: #8B0000;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+            }
+            
+            .reset-button:hover {
+                background: #A52A2A;
+            }
+        </style>
     </head>
     <body>
-        <div class="planet-container">
+        <div class="control-panel">
+            <h3>Planet Controls</h3>
+            
+            <!-- Preset Buttons -->
+            <div class="preset-buttons">
+                <button onclick="loadPreset('earth')" class="active">Earth</button>
+                <button onclick="loadPreset('mars')">Mars</button>
+                <button onclick="loadPreset('venus')">Venus</button>
+                <button onclick="loadPreset('gas-giant')">Jupiter</button>
+            </div>
+            
+            <!-- Size Controls -->
+            <div class="control-group">
+                <h4>Size & Scale</h4>
+                <div class="slider-container">
+                    <label>Planet Size: <span class="value-display" id="planetSizeValue">30vw</span></label>
+                    <input type="range" id="planetSize" min="10" max="50" value="30" step="1">
+                </div>
+                <div class="slider-container">
+                    <label>Atmosphere Delta: <span class="value-display" id="atmosphereDeltaValue">10px</span></label>
+                    <input type="range" id="atmosphereDelta" min="5" max="30" value="10" step="1">
+                </div>
+            </div>
+            
+            <!-- Texture Controls -->
+            <div class="control-group">
+                <h4>Texture Settings</h4>
+                <div class="slider-container">
+                    <label>Texture Opacity: <span class="value-display" id="textureOpacityValue">70%</span></label>
+                    <input type="range" id="textureOpacity" min="0" max="100" value="70" step="5">
+                </div>
+                <div class="slider-container">
+                    <label>Brightness: <span class="value-display" id="textureBrightnessValue">1.0</span></label>
+                    <input type="range" id="textureBrightness" min="0" max="3" value="1" step="0.1">
+                </div>
+                <div class="slider-container">
+                    <label>Contrast: <span class="value-display" id="textureContrastValue">1.2</span></label>
+                    <input type="range" id="textureContrast" min="0" max="3" value="1.2" step="0.1">
+                </div>
+                <div class="slider-container">
+                    <label>Saturation: <span class="value-display" id="textureSaturationValue">1.3</span></label>
+                    <input type="range" id="textureSaturation" min="0" max="3" value="1.3" step="0.1">
+                </div>
+            </div>
+            
+            <!-- Planet Colors -->
+            <div class="control-group">
+                <h4>Planet Colors</h4>
+                <div class="slider-container">
+                    <label>Primary Color:</label>
+                    <input type="color" id="planetPrimary" value="#87CEEB">
+                </div>
+                <div class="slider-container">
+                    <label>Secondary Color:</label>
+                    <input type="color" id="planetSecondary" value="#4682B4">
+                </div>
+                <div class="slider-container">
+                    <label>Tertiary Color:</label>
+                    <input type="color" id="planetTertiary" value="#1E3A8A">
+                </div>
+                <div class="slider-container">
+                    <label>Dark Color:</label>
+                    <input type="color" id="planetDark" value="#0F172A">
+                </div>
+                <div class="slider-container">
+                    <label>Deep Color:</label>
+                    <input type="color" id="planetDeep" value="#020617">
+                </div>
+            </div>
+            
+            <!-- Atmosphere Colors -->
+            <div class="control-group">
+                <h4>Atmosphere Colors</h4>
+                <div class="slider-container">
+                    <label>Outer Atmosphere:</label>
+                    <input type="color" id="atmosphereOuter" value="#6495ED">
+                    <input type="range" id="atmosphereOuterAlpha" min="0" max="100" value="8" step="1">
+                    <span class="value-display" id="atmosphereOuterAlphaValue">8%</span>
+                </div>
+                <div class="slider-container">
+                    <label>Mid Atmosphere:</label>
+                    <input type="color" id="atmosphereMid" value="#4682B4">
+                    <input type="range" id="atmosphereMidAlpha" min="0" max="100" value="10" step="1">
+                    <span class="value-display" id="atmosphereMidAlphaValue">10%</span>
+                </div>
+                <div class="slider-container">
+                    <label>Inner Atmosphere:</label>
+                    <input type="color" id="atmosphereInner" value="#1E90FF">
+                    <input type="range" id="atmosphereInnerAlpha" min="0" max="100" value="15" step="1">
+                    <span class="value-display" id="atmosphereInnerAlphaValue">15%</span>
+                </div>
+                <div class="slider-container">
+                    <label>Horizon Glow:</label>
+                    <input type="color" id="atmosphereHorizon" value="#00BFFF">
+                    <input type="range" id="atmosphereHorizonAlpha" min="0" max="100" value="20" step="1">
+                    <span class="value-display" id="atmosphereHorizonAlphaValue">20%</span>
+                </div>
+            </div>
+            
+            <!-- Effects Controls -->
+            <div class="control-group">
+                <h4>Atmospheric Effects</h4>
+                <div class="slider-container">
+                    <label>Atmosphere Blur: <span class="value-display" id="atmosphereBlurValue">2px</span></label>
+                    <input type="range" id="atmosphereBlur" min="0" max="10" value="2" step="0.5">
+                </div>
+                <div class="slider-container">
+                    <label>Strong Blur: <span class="value-display" id="atmosphereBlurStrongValue">3px</span></label>
+                    <input type="range" id="atmosphereBlurStrong" min="0" max="15" value="3" step="0.5">
+                </div>
+                <div class="slider-container">
+                    <label>Planet Blur: <span class="value-display" id="planetBlurValue">2px</span></label>
+                    <input type="range" id="planetBlur" min="0" max="10" value="2" step="0.5">
+                </div>
+            </div>
+            
+            <!-- Shadow & Lighting -->
+            <div class="control-group">
+                <h4>Shadow & Lighting</h4>
+                <div class="slider-container">
+                    <label>Shadow Color:</label>
+                    <input type="color" id="shadowColor" value="#001259">
+                    <input type="range" id="shadowAlpha" min="0" max="100" value="40" step="1">
+                    <span class="value-display" id="shadowAlphaValue">40%</span>
+                </div>
+                <div class="slider-container">
+                    <label>Highlight Color:</label>
+                    <input type="color" id="highlightColor" value="#87CEEB">
+                    <input type="range" id="highlightAlpha" min="0" max="100" value="20" step="1">
+                    <span class="value-display" id="highlightAlphaValue">20%</span>
+                </div>
+                <div class="slider-container">
+                    <label>Glow Color:</label>
+                    <input type="color" id="glowColor" value="#1E8FFF">
+                    <input type="range" id="glowAlpha" min="0" max="100" value="93" step="1">
+                    <span class="value-display" id="glowAlphaValue">93%</span>
+                </div>
+            </div>
+            
+            <!-- Cloud Controls -->
+            <div class="control-group">
+                <h4>Clouds & Surface</h4>
+                <div class="slider-container">
+                    <label>Cloud Light Color:</label>
+                    <input type="color" id="cloudLight" value="#FFFFFF">
+                    <input type="range" id="cloudLightAlpha" min="0" max="100" value="10" step="1">
+                    <span class="value-display" id="cloudLightAlphaValue">10%</span>
+                </div>
+                <div class="slider-container">
+                    <label>Cloud Medium Color:</label>
+                    <input type="color" id="cloudMedium" value="#ADD8E6">
+                    <input type="range" id="cloudMediumAlpha" min="0" max="100" value="15" step="1">
+                    <span class="value-display" id="cloudMediumAlphaValue">15%</span>
+                </div>
+                <div class="slider-container">
+                    <label>Surface Band Color:</label>
+                    <input type="color" id="surfaceBand" value="#191970">
+                    <input type="range" id="surfaceBandAlpha" min="0" max="100" value="30" step="1">
+                    <span class="value-display" id="surfaceBandAlphaValue">30%</span>
+                </div>
+            </div>
+            
+            <button class="reset-button" onclick="resetToDefaults()">Reset to Defaults</button>
+        </div>
+        
+        <div class="planet-container" id="planetContainer">
             <div class="planet-shadow"></div>
             <div class="planet"></div>
             <div class="atmosphere"></div>
         </div>
+        
+        <script>
+            // Planet presets with texture settings
+            const presets = {
+                earth: {
+                    planetPrimary: '#87CEEB',
+                    planetSecondary: '#4682B4',
+                    planetTertiary: '#1E3A8A',
+                    planetDark: '#0F172A',
+                    planetDeep: '#020617',
+                    atmosphereOuter: '#6495ED',
+                    atmosphereMid: '#4682B4',
+                    atmosphereInner: '#1E90FF',
+                    atmosphereHorizon: '#00BFFF',
+                    shadowColor: '#001259',
+                    highlightColor: '#87CEEB',
+                    glowColor: '#1E8FFF',
+                    cloudLight: '#FFFFFF',
+                    cloudMedium: '#ADD8E6',
+                    surfaceBand: '#191970',
+                    textureOpacity: 70,
+                    textureBrightness: 1.0,
+                    textureContrast: 1.2,
+                    textureSaturation: 1.3
+                },
+                mars: {
+                    planetPrimary: '#CD5C5C',
+                    planetSecondary: '#8B0000',
+                    planetTertiary: '#4A0404',
+                    planetDark: '#2D0000',
+                    planetDeep: '#1A0000',
+                    atmosphereOuter: '#FF4500',
+                    atmosphereMid: '#FF8C00',
+                    atmosphereInner: '#FF4500',
+                    atmosphereHorizon: '#FF4500',
+                    shadowColor: '#8B0000',
+                    highlightColor: '#FF4500',
+                    glowColor: '#FF4500',
+                    cloudLight: '#FFFFFF',
+                    cloudMedium: '#FFA500',
+                    surfaceBand: '#8B0000',
+                    textureOpacity: 80,
+                    textureBrightness: 1.1,
+                    textureContrast: 1.3,
+                    textureSaturation: 1.4
+                },
+                venus: {
+                    planetPrimary: '#F4A460',
+                    planetSecondary: '#D2691E',
+                    planetTertiary: '#8B4513',
+                    planetDark: '#654321',
+                    planetDeep: '#3E2723',
+                    atmosphereOuter: '#FFD700',
+                    atmosphereMid: '#FFA500',
+                    atmosphereInner: '#FF8C00',
+                    atmosphereHorizon: '#FF4500',
+                    shadowColor: '#8B4513',
+                    highlightColor: '#FFD700',
+                    glowColor: '#FF8C00',
+                    cloudLight: '#FFFFFF',
+                    cloudMedium: '#FFD700',
+                    surfaceBand: '#8B4513',
+                    textureOpacity: 90,
+                    textureBrightness: 1.2,
+                    textureContrast: 1.1,
+                    textureSaturation: 1.5
+                },
+                'gas-giant': {
+                    planetPrimary: '#DEB887',
+                    planetSecondary: '#D2691E',
+                    planetTertiary: '#8B4513',
+                    planetDark: '#654321',
+                    planetDeep: '#3E2723',
+                    atmosphereOuter: '#FFD700',
+                    atmosphereMid: '#FFA500',
+                    atmosphereInner: '#FF8C00',
+                    atmosphereHorizon: '#FF4500',
+                    shadowColor: '#8B4513',
+                    highlightColor: '#FFD700',
+                    glowColor: '#FF8C00',
+                    cloudLight: '#FFFFFF',
+                    cloudMedium: '#FFD700',
+                    surfaceBand: '#8B4513',
+                    textureOpacity: 80,
+                    textureBrightness: 1.1,
+                    textureContrast: 1.4,
+                    textureSaturation: 1.6
+                }
+            };
+            
+            // Initialize controls
+            function initializeControls() {
+                // Size controls
+                document.getElementById('planetSize').addEventListener('input', updatePlanetSize);
+                document.getElementById('atmosphereDelta').addEventListener('input', updateAtmosphereDelta);
+                
+                // Texture controls
+                document.getElementById('textureOpacity').addEventListener('input', updateTexture);
+                document.getElementById('textureBrightness').addEventListener('input', updateTexture);
+                document.getElementById('textureContrast').addEventListener('input', updateTexture);
+                document.getElementById('textureSaturation').addEventListener('input', updateTexture);
+                
+                // Color controls
+                const colorInputs = ['planetPrimary', 'planetSecondary', 'planetTertiary', 'planetDark', 'planetDeep',
+                                   'atmosphereOuter', 'atmosphereMid', 'atmosphereInner', 'atmosphereHorizon',
+                                   'shadowColor', 'highlightColor', 'glowColor', 'cloudLight', 'cloudMedium', 'surfaceBand'];
+                
+                colorInputs.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('input', updateColors);
+                    }
+                });
+                
+                // Alpha controls
+                const alphaInputs = ['atmosphereOuterAlpha', 'atmosphereMidAlpha', 'atmosphereInnerAlpha', 'atmosphereHorizonAlpha',
+                                   'shadowAlpha', 'highlightAlpha', 'glowAlpha', 'cloudLightAlpha', 'cloudMediumAlpha', 'surfaceBandAlpha'];
+                
+                alphaInputs.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('input', updateAlphas);
+                    }
+                });
+                
+                // Effect controls
+                const effectInputs = ['atmosphereBlur', 'atmosphereBlurStrong', 'planetBlur'];
+                effectInputs.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('input', updateEffects);
+                    }
+                });
+            }
+            
+            function updatePlanetSize() {
+                const size = document.getElementById('planetSize').value;
+                document.getElementById('planetSizeValue').textContent = size + 'vw';
+                document.documentElement.style.setProperty('--planet-size', size + 'vw');
+                updateAtmosphereSize();
+            }
+            
+            function updateAtmosphereDelta() {
+                const delta = document.getElementById('atmosphereDelta').value;
+                document.getElementById('atmosphereDeltaValue').textContent = delta + 'px';
+                document.documentElement.style.setProperty('--atmosphere-delta', delta + 'px');
+                updateAtmosphereSize();
+            }
+            
+            function updateAtmosphereSize() {
+                const size = document.getElementById('planetSize').value;
+                const delta = document.getElementById('atmosphereDelta').value;
+                document.documentElement.style.setProperty('--atmosphere-size', `calc(${size}vw + ${delta}px)`);
+            }
+            
+            function updateTexture() {
+                const opacity = document.getElementById('textureOpacity').value;
+                const brightness = document.getElementById('textureBrightness').value;
+                const contrast = document.getElementById('textureContrast').value;
+                const saturation = document.getElementById('textureSaturation').value;
+                
+                document.getElementById('textureOpacityValue').textContent = opacity + '%';
+                document.getElementById('textureBrightnessValue').textContent = brightness;
+                document.getElementById('textureContrastValue').textContent = contrast;
+                document.getElementById('textureSaturationValue').textContent = saturation;
+                
+                document.documentElement.style.setProperty('--texture-opacity', opacity / 100);
+                document.documentElement.style.setProperty('--texture-brightness', brightness);
+                document.documentElement.style.setProperty('--texture-contrast', contrast);
+                document.documentElement.style.setProperty('--texture-saturation', saturation);
+            }
+            
+            function updateColors() {
+                const colorInputs = ['planetPrimary', 'planetSecondary', 'planetTertiary', 'planetDark', 'planetDeep',
+                                   'atmosphereOuter', 'atmosphereMid', 'atmosphereInner', 'atmosphereHorizon',
+                                   'shadowColor', 'highlightColor', 'glowColor', 'cloudLight', 'cloudMedium', 'surfaceBand'];
+                
+                colorInputs.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        const color = element.value;
+                        const cssVar = id.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        document.documentElement.style.setProperty(`--${cssVar}`, color);
+                    }
+                });
+                
+                // Update alpha values after color changes
+                updateAlphas();
+            }
+            
+            function updateAlphas() {
+                const alphaMappings = {
+                    'atmosphereOuterAlpha': { colorId: 'atmosphereOuter', cssVar: 'atmosphere-outer' },
+                    'atmosphereMidAlpha': { colorId: 'atmosphereMid', cssVar: 'atmosphere-mid' },
+                    'atmosphereInnerAlpha': { colorId: 'atmosphereInner', cssVar: 'atmosphere-inner' },
+                    'atmosphereHorizonAlpha': { colorId: 'atmosphereHorizon', cssVar: 'atmosphere-horizon' },
+                    'shadowAlpha': { colorId: 'shadowColor', cssVar: 'shadow-color' },
+                    'highlightAlpha': { colorId: 'highlightColor', cssVar: 'highlight-color' },
+                    'glowAlpha': { colorId: 'glowColor', cssVar: 'glow-color' },
+                    'cloudLightAlpha': { colorId: 'cloudLight', cssVar: 'cloud-light' },
+                    'cloudMediumAlpha': { colorId: 'cloudMedium', cssVar: 'cloud-medium' },
+                    'surfaceBandAlpha': { colorId: 'surfaceBand', cssVar: 'surface-band' }
+                };
+                
+                Object.keys(alphaMappings).forEach(inputId => {
+                    const alphaSlider = document.getElementById(inputId);
+                    const colorInput = document.getElementById(alphaMappings[inputId].colorId);
+                    const displayElement = document.getElementById(inputId + 'Value');
+                    
+                    if (alphaSlider && colorInput) {
+                        const alpha = alphaSlider.value;
+                        const color = colorInput.value;
+                        
+                        // Convert hex to rgba
+                        const rgba = hexToRgba(color, alpha / 100);
+                        document.documentElement.style.setProperty(`--${alphaMappings[inputId].cssVar}`, rgba);
+                        
+                        // Update display
+                        if (displayElement) {
+                            displayElement.textContent = alpha + '%';
+                        }
+                    }
+                });
+            }
+            
+            function updateEffects() {
+                const blur = document.getElementById('atmosphereBlur').value;
+                const blurStrong = document.getElementById('atmosphereBlurStrong').value;
+                const planetBlur = document.getElementById('planetBlur').value;
+                
+                document.getElementById('atmosphereBlurValue').textContent = blur + 'px';
+                document.getElementById('atmosphereBlurStrongValue').textContent = blurStrong + 'px';
+                document.getElementById('planetBlurValue').textContent = planetBlur + 'px';
+                
+                document.documentElement.style.setProperty('--atmosphere-blur', blur + 'px');
+                document.documentElement.style.setProperty('--atmosphere-blur-strong', blurStrong + 'px');
+                document.documentElement.style.setProperty('--planet-blur', planetBlur + 'px');
+            }
+            
+            function hexToRgba(hex, alpha) {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+            
+            function loadPreset(presetName) {
+                const preset = presets[presetName];
+                if (!preset) return;
+                
+                // Update buttons
+                document.querySelectorAll('.preset-buttons button').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                // Update planet container classes to switch textures
+                const container = document.getElementById('planetContainer');
+                container.classList.remove('planet-mars', 'planet-venus', 'planet-gas-giant');
+                
+                if (presetName !== 'earth') {
+                    container.classList.add(`planet-${presetName}`);
+                }
+                
+                // Update color inputs
+                Object.keys(preset).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = preset[key];
+                    }
+                });
+                
+                // Update all values
+                updateColors();
+                updateTexture();
+            }
+            
+            function resetToDefaults() {
+                loadPreset('earth');
+                
+                // Reset size controls
+                document.getElementById('planetSize').value = 30;
+                document.getElementById('atmosphereDelta').value = 10;
+                updatePlanetSize();
+                updateAtmosphereDelta();
+                
+                // Reset effect controls
+                document.getElementById('atmosphereBlur').value = 2;
+                document.getElementById('atmosphereBlurStrong').value = 3;
+                document.getElementById('planetBlur').value = 2;
+                updateEffects();
+                
+                // Reset alpha values
+                const alphaDefaults = {
+                    'atmosphereOuterAlpha': 8,
+                    'atmosphereMidAlpha': 10,
+                    'atmosphereInnerAlpha': 15,
+                    'atmosphereHorizonAlpha': 20,
+                    'shadowAlpha': 40,
+                    'highlightAlpha': 20,
+                    'glowAlpha': 93,
+                    'cloudLightAlpha': 10,
+                    'cloudMediumAlpha': 15,
+                    'surfaceBandAlpha': 30
+                };
+                
+                Object.keys(alphaDefaults).forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.value = alphaDefaults[id];
+                    }
+                });
+                updateAlphas();
+            }
+            
+            // Initialize when page loads
+            window.addEventListener('load', () => {
+                initializeControls();
+                resetToDefaults();
+            });
+        </script>
     </body>
 </html>
