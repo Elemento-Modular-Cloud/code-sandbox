@@ -1,5 +1,5 @@
 :root {
-    --planet-size: 305px;
+    --planet-size: 30vw;
     --atmosphere-delta: calc(var(--planet-size) * .1);
     --atmosphere-size: calc(var(--planet-size) + var(--atmosphere-delta));
 }
@@ -25,27 +25,56 @@ body {
 .atmosphere {
     width: var(--atmosphere-size);
     height: var(--atmosphere-size);
-    background: radial-gradient(
-        circle,
-        transparent 0%,
-        rgba(135, 206, 250, 0.8) 10%,
-        rgba(135, 206, 250, 0.4) 50%,
-        rgba(0, 133, 216, 0.599) 70%
-    );
     border-radius: 50%;
-    box-shadow: 0 0 3px rgb(45, 167, 244);
-    mix-blend-mode: screen;
+    /* Create realistic atmospheric scattering with multiple layers */
+    background: 
+        /* Outer glow - very subtle blue tint */
+        radial-gradient(
+            circle,
+            transparent 0%,
+            rgba(100, 149, 237, 0.03) 40%,
+            rgba(100, 149, 237, 0.02) 70%,
+            transparent 100%
+        ),
+        /* Mid atmosphere - Rayleigh scattering effect */
+        radial-gradient(
+            circle at 70% 30%,
+            rgba(70, 130, 180, 0.15) 0%,
+            rgba(70, 130, 180, 0.1) 30%,
+            rgba(70, 130, 180, 0.05) 60%,
+            transparent 85%
+        ),
+        /* Inner atmosphere - stronger near the surface */
+        radial-gradient(
+            circle at 70% 30%,
+            rgba(30, 144, 255, 0.2) 0%,
+            rgba(30, 144, 255, 0.15) 25%,
+            rgba(30, 144, 255, 0.08) 50%,
+            transparent 75%
+        );
+    mix-blend-mode: normal;
+    filter: blur(1px);
 }
 
 .atmosphere::before {
     content: "";
     position: absolute;
-    top: calc(var(--atmosphere-delta) / 2);
-    left: calc(var(--atmosphere-delta) / 2);
-    width: var(--planet-size);
-    height: var(--planet-size);
+    top: 0;
+    left: 0;
+    width: var(--atmosphere-size);
+    height: var(--atmosphere-size);
     border-radius: 50%;
-    /* box-shadow: inset 0 0 20px rgb(0, 183, 255); */
+    /* Create the horizon glow effect - stronger at the edges, aligned with light */
+    background: 
+        radial-gradient(
+            ellipse at 70% 30%,
+            transparent 0%,
+            transparent 50%,
+            rgba(30, 144, 255, 0.1) 70%,
+            rgba(30, 144, 255, 0.15) 85%,
+            rgba(30, 144, 255, 0.2) 100%
+        );
+    mix-blend-mode: normal;
 }
 
 .atmosphere::after {
@@ -56,8 +85,17 @@ body {
     width: var(--atmosphere-size);
     height: var(--atmosphere-size);
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(0, 157, 255, 0.2) 10%, rgba(0, 21, 61, 0.3) 80%, rgba(135, 206, 250, 0.1) 70%, transparent 100%);
-    /* filter: blur(10px); */
+    /* Add subtle atmospheric distortion and color variation */
+    background: 
+        radial-gradient(
+            circle at 70% 30%,
+            rgba(0, 191, 255, 0.12) 0%,
+            rgba(0, 191, 255, 0.08) 40%,
+            rgba(0, 191, 255, 0.04) 70%,
+            transparent 100%
+        );
+    mix-blend-mode: normal;
+    filter: blur(2px);
 }
 
 .planet {
