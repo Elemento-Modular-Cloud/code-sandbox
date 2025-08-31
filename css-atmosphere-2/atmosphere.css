@@ -1,0 +1,118 @@
+:root {
+    --planet-size: 305px;
+    --atmosphere-delta: calc(var(--planet-size) * .1);
+    --atmosphere-size: calc(var(--planet-size) + var(--atmosphere-delta));
+}
+
+body {
+    background-color: #000;
+}
+
+.planet-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.planet-container * {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.atmosphere {
+    width: var(--atmosphere-size);
+    height: var(--atmosphere-size);
+    background: radial-gradient(
+        circle,
+        transparent 0%,
+        rgba(135, 206, 250, 0.8) 10%,
+        rgba(135, 206, 250, 0.4) 50%,
+        rgba(0, 133, 216, 0.599) 70%
+    );
+    border-radius: 50%;
+    box-shadow: 0 0 3px rgb(45, 167, 244);
+    mix-blend-mode: screen;
+}
+
+.atmosphere::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--atmosphere-delta) / 2);
+    left: calc(var(--atmosphere-delta) / 2);
+    width: var(--planet-size);
+    height: var(--planet-size);
+    border-radius: 50%;
+    /* box-shadow: inset 0 0 20px rgb(0, 183, 255); */
+}
+
+.atmosphere::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--atmosphere-size);
+    height: var(--atmosphere-size);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 157, 255, 0.2) 10%, rgba(0, 21, 61, 0.3) 80%, rgba(135, 206, 250, 0.1) 70%, transparent 100%);
+    /* filter: blur(10px); */
+}
+
+.planet {
+    width: var(--planet-size);
+    height: var(--planet-size);
+    background: radial-gradient(
+        circle at 30% 30%,
+        #73b0f5 0%,
+        #3971ea 35%,
+        #1e40af 70%,
+        #1e3a8a 100%
+    );
+    border-radius: 50%;
+    box-shadow: inset -10px -10px 20px rgba(0, 18, 89, 0.3);
+}
+
+.planet-shadow {
+    width: calc(var(--atmosphere-size) * 2);
+    height: calc(var(--atmosphere-size) * 2);
+    background: rgba(0, 0, 0, 0.97);
+    border-radius: 50%;
+    z-index: 10;
+    transform-origin: center;
+    transform: translate(-80%, -20%) rotate(55deg);
+    filter: blur(calc(var(--planet-size) * .05));
+    mix-blend-mode: darken;
+}
+
+.planet::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--planet-size);
+    height: var(--planet-size);
+    background-image: url('./texture.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 50%;
+    filter: brightness(.4) contrast(1);
+    mix-blend-mode: darken;
+    opacity: 0.5;
+    z-index: 10;
+}
+
+.planet::after {
+    content: "";
+    position: absolute;
+    top:-3px;
+    left: -2px;
+    width: calc(var(--planet-size) * 1.01);
+    height: var(--planet-size);
+    border-radius: 50%;
+    border: 1px solid rgb(59, 151, 255);
+    box-shadow: inset 0 0 2px rgb(0, 183, 255), inset 0 0 2px rgb(0, 183, 255), inset 0 0 2px rgb(0, 183, 255);
+    filter: blur(3px);
+}
