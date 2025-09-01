@@ -1,22 +1,63 @@
 :root {
     --planet-size: 30vw;
-    --shadow-scale: 1.2;
     --shadow-size: calc(var(--planet-size) * var(--shadow-scale));
     --atmosphere-delta: 10px;
     --atmosphere-size: calc(var(--planet-size) + var(--atmosphere-delta));
     
     --bg-sky-color: #000;
-
+    
     --planet-primary: #CD5C5C;
     --planet-shadow: var(--bg-sky-color);
     /* --planet-shadow: red; */
-
+    
     --shadow-delta: 200px;
     --shadow-angle: 55deg;
+    --shadow-blur: 0.04;
+    --shadow-scale: calc(1 + var(--shadow-blur) * 5);
     
     /* Add these for more precise calculations */
     --shadow-width: calc(var(--shadow-delta) - 1vw - var(--planet-size) * 0.3);
     --pixel-ratio: 1; /* Can be adjusted for different display densities */
+
+    --atmosphere-delta: 10px;
+    --atmosphere-size: calc(var(--planet-size) + var(--atmosphere-delta));
+    
+    /* Planet colors - Earth-like */
+    --planet-primary: #87CEEB;
+    --planet-secondary: #4682B4;
+    --planet-tertiary: #1E3A8A;
+    --planet-dark: #0F172A;
+    --planet-deep: #020617;
+    
+    /* Atmosphere colors */
+    --atmosphere-outer: rgba(100, 149, 237, 0.08);
+    --atmosphere-mid: rgba(70, 130, 180, 0.1);
+    --atmosphere-inner: rgba(30, 144, 255, 0.15);
+    --atmosphere-horizon: rgba(0, 191, 255, 0.2);
+    --atmosphere-highlight: rgba(135, 206, 235, 0.1);
+    
+    /* Shadow and lighting */
+    --shadow-color: rgba(0, 18, 89, 0.4);
+    --highlight-color: rgba(135, 206, 235, 0.2);
+    --glow-color: rgba(30, 143, 255, 0.929);
+    
+    /* Cloud and surface colors */
+    --cloud-light: rgba(255, 255, 255, 0.1);
+    --cloud-medium: rgba(173, 216, 230, 0.15);
+    --surface-band: rgba(25, 25, 112, 0.3);
+    
+    /* Atmospheric effects */
+    --atmosphere-blur: 2px;
+    --atmosphere-blur-strong: 3px;
+    --planet-blur: 2px;
+    
+    /* Planet texture image */
+    --planet-texture: url('./earth.png');
+    --texture-opacity: 0.7;
+    --texture-brightness: 1;
+    --texture-contrast: 1.2;
+    --texture-saturation: 1.3;
+    --texture-blend-mode: normal;
 }
 
 body {
@@ -28,6 +69,11 @@ body {
     font-family: Arial, sans-serif;
     transform: translateZ(0);
     overflow: hidden;
+    background-image: url('./sky.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .hidden {
@@ -101,9 +147,10 @@ body {
     left: 50%;
     width: var(--planet-size);
     height: var(--planet-size);
-    filter: blur(calc(var(--planet-size) * .04));
     transform-origin: center center;
     transform: translate(-50%, -50%) rotate(var(--shadow-angle));
+    filter: blur(calc(var(--planet-size) * var(--shadow-blur)));
+    mix-blend-mode: multiply;
 }
 
 .planet-shadow {
@@ -125,12 +172,13 @@ body {
     height: var(--shadow-size);
     transform: translate(calc(-50% - var(--shadow-size) * .5), -50%);
     background-color: var(--planet-shadow);
+    mix-blend-mode: darken;
 }
 
 .planet-antishadow {
     position: absolute;
     top: 50%;
-    right: calc(50% - var(--planet-size) * .04);
+    right: calc(50% - var(--planet-size) * var(--shadow-blur));
     width: calc(var(--planet-size) / 2 - var(--shadow-delta));
     height: var(--shadow-size);
     transform: translate(0, -50%);
@@ -153,6 +201,282 @@ body {
     left: 50%;
     width: var(--planet-size);
     height: var(--shadow-size);
-    transform: translate(calc( -100% - var(--planet-size) / 2 + var(--shadow-delta) + var(--planet-size) * .04 + 1px), -50%);
+    transform: translate(calc( -100% - var(--planet-size) / 2 + var(--shadow-delta) + var(--planet-size) * var(--shadow-blur) + 1px), -50%);
     background-color: var(--planet-shadow);
+}
+
+.planet-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.planet-container * {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* padding: 10px; */
+}
+
+.atmosphere {
+    width: var(--atmosphere-size);
+    height: var(--atmosphere-size);
+    border-radius: 50%;
+    /* Create dramatic atmospheric scattering with vibrant layers */
+    background: 
+        /* Outer glow - dramatic blue tint extending into space */
+        radial-gradient(
+            circle,
+            transparent 0%,
+            var(--atmosphere-outer) 20%,
+            var(--atmosphere-outer) 40%,
+            var(--atmosphere-outer) 70%,
+            transparent 100%
+        ),
+        /* Mid atmosphere - intense Rayleigh scattering effect */
+        radial-gradient(
+            circle at 70% 30%,
+            var(--atmosphere-mid) 0%,
+            var(--atmosphere-mid) 30%,
+            var(--atmosphere-mid) 60%,
+            transparent 80%
+        ),
+        /* Inner atmosphere - very transparent near the surface */
+        radial-gradient(
+            circle at 70% 30%,
+            var(--atmosphere-inner) 0%,
+            var(--atmosphere-inner) 25%,
+            var(--atmosphere-inner) 50%,
+            transparent 75%
+        ),
+        /* Atmospheric density variation - dramatic horizon effect */
+        radial-gradient(
+            ellipse at 70% 30%,
+            transparent 0%,
+            transparent 50%,
+            var(--atmosphere-horizon) 70%,
+            var(--atmosphere-horizon) 85%,
+            var(--atmosphere-horizon) 100%
+        ),
+        /* High-altitude atmospheric glow */
+        radial-gradient(
+            ellipse at 70% 30%,
+            transparent 0%,
+            transparent 60%,
+            var(--atmosphere-highlight) 80%,
+            var(--atmosphere-highlight) 90%,
+            var(--atmosphere-highlight) 100%
+        );
+    mix-blend-mode: screen;
+    filter: blur(var(--atmosphere-blur));
+    z-index: 3;
+}
+
+.atmosphere::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--atmosphere-size);
+    height: var(--atmosphere-size);
+    border-radius: 50%;
+    /* Create dramatic horizon glow effect */
+    background: 
+        radial-gradient(
+            ellipse at 70% 30%,
+            transparent 0%,
+            transparent 60%,
+            var(--atmosphere-inner) 80%,
+            var(--atmosphere-inner) 90%,
+            var(--atmosphere-inner) 100%
+        ),
+        /* Additional atmospheric banding */
+        radial-gradient(
+            ellipse at 70% 30%,
+            transparent 0%,
+            transparent 50%,
+            var(--atmosphere-horizon) 70%,
+            transparent 90%
+        );
+    mix-blend-mode: screen;
+}
+
+.atmosphere::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--atmosphere-size);
+    height: var(--atmosphere-size);
+    border-radius: 50%;
+    /* Add dramatic atmospheric distortion and color variation */
+    background: 
+        radial-gradient(
+            circle at 70% 30%,
+            var(--atmosphere-horizon) 0%,
+            var(--atmosphere-horizon) 30%,
+            var(--atmosphere-horizon) 60%,
+            transparent 100%
+        ),
+        /* Dramatic atmospheric layer for depth */
+        radial-gradient(
+            ellipse at 70% 30%,
+            transparent 0%,
+            transparent 60%,
+            var(--atmosphere-highlight) 80%,
+            var(--atmosphere-highlight) 90%,
+            var(--atmosphere-highlight) 100%
+        ),
+        /* Atmospheric corona effect */
+        radial-gradient(
+            circle at 70% 30%,
+            rgba(255, 255, 255, 0.02) 0%,
+            var(--atmosphere-highlight) 40%,
+            var(--atmosphere-highlight) 70%,
+            transparent 100%
+        );
+    mix-blend-mode: soft-light;
+    filter: blur(var(--atmosphere-blur-strong));
+}
+
+.planet {
+    width: var(--planet-size);
+    height: var(--planet-size);
+    background: 
+        /* Base planet gradient with more dynamic colors */
+        radial-gradient(
+            circle at 35% 35%,
+            var(--planet-primary) 0%,
+            var(--planet-secondary) 25%,
+            var(--planet-tertiary) 50%,
+            var(--planet-dark) 75%,
+            var(--planet-deep) 100%
+        ),
+        /* Additional atmospheric bands */
+        radial-gradient(
+            ellipse at 40% 40%,
+            transparent 0%,
+            var(--cloud-medium) 20%,
+            transparent 40%,
+            var(--surface-band) 60%,
+            transparent 80%
+        ),
+        /* Cloud layer variations */
+        radial-gradient(
+            ellipse at 60% 30%,
+            transparent 0%,
+            var(--cloud-light) 15%,
+            transparent 30%,
+            var(--cloud-medium) 45%,
+            transparent 65%
+        );
+    border-radius: 50%;
+    box-shadow: 
+        inset -15px -15px 30px var(--shadow-color),
+        inset 5px 5px 15px var(--highlight-color),
+        -10px -10px 30px var(--glow-color);
+}
+
+.planet::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--planet-size);
+    height: var(--planet-size);
+    background-image: var(--planet-texture);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 50%;
+    filter: brightness(var(--texture-brightness)) contrast(var(--texture-contrast)) saturate(var(--texture-saturation));
+    mix-blend-mode: var(--texture-blend-mode, normal);
+    opacity: var(--texture-opacity);
+    z-index: 10;
+}
+
+.planet::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: calc(var(--planet-size) + 4px);
+    height: calc(var(--planet-size) + 4px);
+    border-radius: 50%;
+    background: 
+        radial-gradient(
+            circle at 35% 35%,
+            var(--planet-primary) 0%,
+            var(--planet-secondary) 50%,
+            transparent 100%
+        );
+    mix-blend-mode: soft-light;
+    filter: blur(var(--planet-blur));
+    z-index: 5;
+}
+
+/* Add additional surface detail layers */
+.planet-container::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--planet-size);
+    height: var(--planet-size);
+    border-radius: 50%;
+    background: 
+        /* Storm systems and atmospheric bands */
+        radial-gradient(
+            ellipse at 45% 40%,
+            transparent 0%,
+            var(--surface-band) 20%,
+            transparent 40%,
+            var(--surface-band) 60%,
+            transparent 80%
+        ),
+        /* High-altitude clouds */
+        radial-gradient(
+            ellipse at 70% 25%,
+            transparent 0%,
+            var(--cloud-light) 10%,
+            transparent 25%,
+            var(--cloud-medium) 40%,
+            transparent 60%
+        ),
+        /* Equatorial bands */
+        radial-gradient(
+            ellipse at 50% 50%,
+            transparent 0%,
+            transparent 30%,
+            var(--atmosphere-inner) 45%,
+            var(--surface-band) 55%,
+            transparent 70%
+        );
+    mix-blend-mode: soft-light;
+    opacity: 0.8;
+    z-index: 8;
+}
+
+/* Add atmospheric highlights */
+.planet-container::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--planet-size);
+    height: var(--planet-size);
+    border-radius: 50%;
+    background: 
+        radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 255, 255, 0.1) 0%,
+            var(--atmosphere-highlight) 30%,
+            transparent 60%
+        );
+    mix-blend-mode: screen;
+    z-index: 9;
 }

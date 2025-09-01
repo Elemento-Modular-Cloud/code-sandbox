@@ -12,12 +12,25 @@
             <input type="range" id="planet-size-slider" min="1" max="50" value="30" step="1">
             <br>
             <br>
+            <label for="atmosphere-delta-slider">Atmosphere Delta: <span id="atmosphere-delta-value">10</span>px</label>
+            <input type="range" id="atmosphere-delta-slider" min="1" max="30" value="10" step="1">
+            <br>
+            <br>
             <label for="shadow-delta-slider">Shadow Delta: <span id="shadow-delta-value">20</span>%</label>
             <input type="range" id="shadow-delta-slider" min="-2" max="30" value="20" step="1">
             <br>
             <br>
             <label for="shadow-angle-slider">Shadow Angle: <span id="shadow-angle-value">55</span>°</label>
             <input type="range" id="shadow-angle-slider" min="0" max="360" value="55" step="1">
+            <br>
+            <br>
+            <label for="shadow-blur-slider">Shadow Blur: <span id="shadow-blur-value">0.04</span></label>
+            <input type="range" id="shadow-blur-slider" min="0" max="0.2" value="0.04" step="0.01">
+        </div>
+        
+        <div class="planet-container" id="planetContainer">
+            <div class="planet"></div>
+            <div class="atmosphere"></div>
         </div>
         <div class="planet"></div>
         <div class="shadow-container">
@@ -31,10 +44,14 @@
         <script>
             const planetSizeSlider = document.getElementById('planet-size-slider');
             const planetSizeValueDisplay = document.getElementById('planet-size-value');
+            const atmosphereDeltaSlider = document.getElementById('atmosphere-delta-slider');
+            const atmosphereDeltaValueDisplay = document.getElementById('atmosphere-delta-value');
             const deltaSlider = document.getElementById('shadow-delta-slider');
             const deltaValueDisplay = document.getElementById('shadow-delta-value');
             const angleSlider = document.getElementById('shadow-angle-slider');
             const angleValueDisplay = document.getElementById('shadow-angle-value');
+            const shadowBlurSlider = document.getElementById('shadow-blur-slider');
+            const shadowBlurValueDisplay = document.getElementById('shadow-blur-value');
             
             // Get shadow and antishadow elements
             const shadowElements = document.querySelectorAll('.planet-shadow, .planet-shadow-mask');
@@ -66,6 +83,12 @@
                 updateShadowDelta();
             }
             
+            function updateAtmosphereDelta() {
+                const value = atmosphereDeltaSlider.value;
+                document.documentElement.style.setProperty('--atmosphere-delta', value + 'px');
+                atmosphereDeltaValueDisplay.textContent = value;
+            }
+            
             // Get the planet size from CSS and set it as the max value
             function initializeSlider() {
                 const planetSize = parseFloat(getComputedStyle(document.documentElement)
@@ -77,6 +100,8 @@
                 deltaSlider.value = defaultValue;
                 updateShadowDelta();
                 updateShadowAngle();
+                updateShadowBlur(); // Initialize shadow blur
+                updateAtmosphereDelta(); // Initialize atmosphere delta
             }
             
             function updateShadowDelta() {
@@ -113,9 +138,17 @@
                 angleValueDisplay.textContent = value;
             }
             
+            function updateShadowBlur() {
+                const value = shadowBlurSlider.value;
+                document.documentElement.style.setProperty('--shadow-blur', value);
+                shadowBlurValueDisplay.textContent = value;
+            }
+            
             planetSizeSlider.addEventListener('input', updatePlanetSize);
+            atmosphereDeltaSlider.addEventListener('input', updateAtmosphereDelta);
             deltaSlider.addEventListener('input', updateShadowDelta);
             angleSlider.addEventListener('input', updateShadowAngle);
+            shadowBlurSlider.addEventListener('input', updateShadowBlur);
             initializeSlider(); // Initialize on load
         </script>
     </body>
