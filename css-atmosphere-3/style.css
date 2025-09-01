@@ -1,0 +1,143 @@
+:root {
+    --planet-size: 30vw;
+    --shadow-scale: 1.2;
+    --shadow-size: calc(var(--planet-size) * var(--shadow-scale));
+    --atmosphere-delta: 10px;
+    --atmosphere-size: calc(var(--planet-size) + var(--atmosphere-delta));
+    
+    --bg-sky-color: #000;
+
+    --planet-primary: #CD5C5C;
+    --planet-shadow: var(--bg-sky-color);
+
+    --shadow-delta: 200px;
+}
+
+body {
+    background-color: var(--bg-sky-color);
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.hidden {
+    display: none;
+}
+
+.controls {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 1000;
+}
+
+.controls label {
+    color: white;
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.controls input[type="range"] {
+    width: 200px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--planet-primary);
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.controls input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--planet-primary);
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.planet {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--planet-size);
+    height: var(--planet-size);
+    background-color: var(--planet-primary);
+    border-radius: 50%;
+}
+
+.shadow-container {
+    filter: blur(calc(var(--planet-size) * .04));
+}
+
+.planet-shadow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* transform: translate(calc(var(--planet-size) * .5 - var(--shadow-delta)), -50%); */
+    transform: translate(-50%, -50%);
+    width: calc(var(--shadow-delta) - var(--planet-size) / 2 + var(--planet-size) * .20);
+    height: calc(var(--shadow-size));
+    background-color: var(--planet-shadow);
+    border-radius: 50%;
+    border: 1px solid red;
+}
+
+.planet-shadow-mask {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--shadow-size);
+    height: var(--shadow-size);
+    transform: translate(calc(-50% - var(--shadow-size) * .5), -50%);
+    /* transform: translate(calc( -100% + var(--shadow-size) - var(--shadow-delta) ), 0); */
+    /* transform-origin: right center; */
+    background-color: var(--planet-shadow);
+}
+
+.planet-antishadow {
+    position: absolute;
+    top: 50%;
+    right: calc(50% - var(--planet-size) * .04);
+    width: calc(var(--planet-size) / 2 - var(--shadow-delta));
+    height: var(--shadow-size);
+    transform: translate(0, -50%);
+    background-color: var(--planet-shadow);
+    
+    /* Position the hole to align exactly with the blue ellipse */
+    mask: url('./antishadow.svg');
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    z-index: 10;
+}
+
+.planet-antishadow-mask {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--planet-size);
+    height: var(--shadow-size);
+    transform: translate(calc( -100% - var(--planet-size) / 2 + var(--shadow-delta) + var(--planet-size) * .04 + 1px), -50%);
+    /* transform: translate(calc( -100% + var(--shadow-size) - var(--shadow-delta) ), 0); */
+    /* transform-origin: right center; */
+    background-color: var(--planet-shadow);
+    z-index: 10;
+}
