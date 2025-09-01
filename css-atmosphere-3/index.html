@@ -8,8 +8,16 @@
     </head>
     <body>
         <div class="controls">
-            <label for="shadow-delta-slider">Shadow Delta: <span id="shadow-delta-value">20</span>vw</label>
+            <label for="planet-size-slider">Planet Size: <span id="planet-size-value">30</span>vw</label>
+            <input type="range" id="planet-size-slider" min="1" max="50" value="30" step="1">
+            <br>
+            <br>
+            <label for="shadow-delta-slider">Shadow Delta: <span id="shadow-delta-value">20</span>%</label>
             <input type="range" id="shadow-delta-slider" min="-2" max="30" value="20" step="1">
+            <br>
+            <br>
+            <label for="shadow-angle-slider">Shadow Angle: <span id="shadow-angle-value">55</span>°</label>
+            <input type="range" id="shadow-angle-slider" min="0" max="360" value="55" step="1">
         </div>
         <div class="planet"></div>
         <div class="shadow-container">
@@ -21,32 +29,68 @@
         </div>
         
         <script>
-            const slider = document.getElementById('shadow-delta-slider');
-            const valueDisplay = document.getElementById('shadow-delta-value');
+            const planetSizeSlider = document.getElementById('planet-size-slider');
+            const planetSizeValueDisplay = document.getElementById('planet-size-value');
+            const deltaSlider = document.getElementById('shadow-delta-slider');
+            const deltaValueDisplay = document.getElementById('shadow-delta-value');
+            const angleSlider = document.getElementById('shadow-angle-slider');
+            const angleValueDisplay = document.getElementById('shadow-angle-value');
             
             // Get shadow and antishadow elements
             const shadowElements = document.querySelectorAll('.planet-shadow, .planet-shadow-mask');
             const antishadowElements = document.querySelectorAll('.planet-antishadow, .planet-antishadow-mask');
             
+            function updatePlanetSize() {
+                const value = planetSizeSlider.value;
+                document.documentElement.style.setProperty('--planet-size', value + 'vw');
+                planetSizeValueDisplay.textContent = value;
+                
+                // Update shadow delta slider max value based on new planet size
+                const oldMax = deltaSlider.max;
+                deltaSlider.max = value * 1.5;
+                
+                // Preserve the current shadow delta value by scaling it proportionally
+                const currentDeltaValue = parseFloat(deltaSlider.value);
+                const oldMaxFloat = parseFloat(oldMax);
+                const newMaxFloat = parseFloat(deltaSlider.max);
+                
+                // Scale the current value to maintain its relative position
+                const scaleFactor = newMaxFloat / oldMaxFloat;
+                const newDeltaValue = Math.round(currentDeltaValue * scaleFactor);
+                
+                // Ensure the new value is within bounds
+                const clampedValue = Math.max(parseFloat(deltaSlider.min), Math.min(newDeltaValue, newMaxFloat));
+                deltaSlider.value = clampedValue;
+                
+                // Update the display and apply the new shadow delta
+                updateShadowDelta();
+            }
+            
             // Get the planet size from CSS and set it as the max value
             function initializeSlider() {
                 const planetSize = parseFloat(getComputedStyle(document.documentElement)
                     .getPropertyValue('--planet-size'));
-                slider.max = planetSize * 1.5;
+                deltaSlider.max = planetSize * 1.5;
                 
                 // Set a reasonable default value (2/3 of planet size)
                 const defaultValue = Math.round(planetSize * 0.67);
-                slider.value = defaultValue;
+                deltaSlider.value = defaultValue;
                 updateShadowDelta();
+                updateShadowAngle();
             }
             
             function updateShadowDelta() {
-                const value = slider.value;
+                const value = deltaSlider.value;
+                const min = parseFloat(deltaSlider.min);
+                const max = parseFloat(deltaSlider.max);
                 const planetSize = parseFloat(getComputedStyle(document.documentElement)
                     .getPropertyValue('--planet-size'));
                 
                 document.documentElement.style.setProperty('--shadow-delta', value + 'vw');
-                valueDisplay.textContent = value;
+                
+                // Map slider range to 0-100% regardless of actual min/max values
+                const percentage = Math.round(((value - min) / (max - min)) * 100);
+                deltaValueDisplay.textContent = percentage;
                 
                 // Switch between shadow and antishadow based on slider value
                 // Use planet-size/2 as the threshold - below shows shadow, above shows antishadow
@@ -63,7 +107,15 @@
                 }
             }
             
-            slider.addEventListener('input', updateShadowDelta);
+            function updateShadowAngle() {
+                const value = angleSlider.value;
+                document.documentElement.style.setProperty('--shadow-angle', value + 'deg');
+                angleValueDisplay.textContent = value;
+            }
+            
+            planetSizeSlider.addEventListener('input', updatePlanetSize);
+            deltaSlider.addEventListener('input', updateShadowDelta);
+            angleSlider.addEventListener('input', updateShadowAngle);
             initializeSlider(); // Initialize on load
         </script>
     </body>

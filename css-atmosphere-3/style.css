@@ -9,19 +9,29 @@
 
     --planet-primary: #CD5C5C;
     --planet-shadow: var(--bg-sky-color);
+    /* --planet-shadow: red; */
 
     --shadow-delta: 200px;
+    --shadow-angle: 55deg;
+    
+    /* Add these for more precise calculations */
+    --shadow-width: calc(var(--shadow-delta) - 1vw - var(--planet-size) * 0.3);
+    --pixel-ratio: 1; /* Can be adjusted for different display densities */
 }
 
 body {
     background-color: var(--bg-sky-color);
+    height: 97.5vh;
+    width: 100%;
     margin: 0;
     padding: 20px;
     font-family: Arial, sans-serif;
+    transform: translateZ(0);
+    overflow: hidden;
 }
 
 .hidden {
-    display: none;
+    opacity: 0;
 }
 
 .controls {
@@ -31,6 +41,8 @@ body {
     background: rgba(255, 255, 255, 0.1);
     padding: 15px;
     border-radius: 8px;
+    /* Add vendor prefixes for backdrop-filter */
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 1000;
@@ -84,20 +96,25 @@ body {
 }
 
 .shadow-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--planet-size);
+    height: var(--planet-size);
     filter: blur(calc(var(--planet-size) * .04));
+    transform-origin: center center;
+    transform: translate(-50%, -50%) rotate(var(--shadow-angle));
 }
 
 .planet-shadow {
     position: absolute;
     top: 50%;
     left: 50%;
-    /* transform: translate(calc(var(--planet-size) * .5 - var(--shadow-delta)), -50%); */
     transform: translate(-50%, -50%);
-    width: calc(var(--shadow-delta) - var(--planet-size) / 2 + var(--planet-size) * .20);
-    height: calc(var(--shadow-size));
+    width: var(--shadow-width); /* Define this as a simpler calculation */
+    height: var(--shadow-size);
     background-color: var(--planet-shadow);
     border-radius: 50%;
-    border: 1px solid red;
 }
 
 .planet-shadow-mask {
@@ -107,8 +124,6 @@ body {
     width: var(--shadow-size);
     height: var(--shadow-size);
     transform: translate(calc(-50% - var(--shadow-size) * .5), -50%);
-    /* transform: translate(calc( -100% + var(--shadow-size) - var(--shadow-delta) ), 0); */
-    /* transform-origin: right center; */
     background-color: var(--planet-shadow);
 }
 
@@ -121,12 +136,15 @@ body {
     transform: translate(0, -50%);
     background-color: var(--planet-shadow);
     
-    /* Position the hole to align exactly with the blue ellipse */
+    /* Add vendor prefixes for mask property */
+    -webkit-mask: url('./antishadow.svg');
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
     mask: url('./antishadow.svg');
     mask-size: 100% 100%;
     mask-repeat: no-repeat;
     mask-position: center;
-    z-index: 10;
 }
 
 .planet-antishadow-mask {
@@ -136,8 +154,5 @@ body {
     width: var(--planet-size);
     height: var(--shadow-size);
     transform: translate(calc( -100% - var(--planet-size) / 2 + var(--shadow-delta) + var(--planet-size) * .04 + 1px), -50%);
-    /* transform: translate(calc( -100% + var(--shadow-size) - var(--shadow-delta) ), 0); */
-    /* transform-origin: right center; */
     background-color: var(--planet-shadow);
-    z-index: 10;
 }
