@@ -1,0 +1,42 @@
+#!/bin/bash
+GUEST_NAME="$1"
+EVENT="$2"
+SUBEVENT="$3"
+LOG="/etc/libvirt/hooks/qemu.log"
+XML_TMP=$(mktemp)
+
+echo "EVENT=$EVENT SUBEVENT=$SUBEVENT for $GUEST_NAME" >> "$LOG"
+
+# Path statico alla configurazione salvata
+XML="/etc/libvirt/qemu/$GUEST_NAME.xml"
+
+# Inizializza RAM
+VM_RAM_KB=0
+
+if [[ -f "$XML" ]]; then
+    echo "XML file exists: $XML" >> "$LOG"
+    VM_RAM_KB=$(awk -F'[<>]' '/<memory/ {print $3}' "$XML" | tr -d '[:space:]')
+elif [[ "$EVENT" == "migrate" && "$SUBEVENT" == "begin" ]]; then
+    echo "Reading domain XML from stdin (migration incoming)" >> "$LOG"
+    cat > "$XML_TMP"
+    echo "---XML DUMP---" >> "$LOG"
+    cat "$XML_TMP" >> "$LOG"
+    echo "---END XML---" >> "$LOG"
+    VM_RAM_KB=$(awk -F'[<>]' '/<memory/ {print $3}' "$XML_TMP" | tr -d '[:space:]')
+    rm -f "$XML_TMP"
+else
+    echo "XML not found and not in migration begin, skipping" >> "$LOG"
+fi
+
+echo "Detected RAM: $VM_RAM_KB KiB" >> "$LOG"
+
+# Azioni sui lifecycle hooks
+if [[ "$EVENT" == "prepare" ]]; then
+    /opt/elemento/hugepage_resizer.sh "$GUEST_NAME" "$VM_RAM_KB" "start"
+elif [[ "$EVENT" == "release" ]]; then
+    /opt/elemento/hugepage_resizer.sh "$GUEST_NAME" "$VM_RAM_KB" "stop"
+elif [[ "$EVENT" == "migrate" && "$SUBEVENT" == "begin" ]]; then
+    /opt/elemento/hugepage_resizer.sh "$GUEST_NAME" "$VM_RAM_KB" "start"
+else
+    echo "No matching action for event=$EVENT subevent=$SUBEVENT" >> "$LOG"
+fi
