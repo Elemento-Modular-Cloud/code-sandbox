@@ -3,6 +3,7 @@
     --atmosphere-thickness: 12vh;
     --bg-color: #000;
     --fadeout-width: 35vw;
+    --halo-height: 4px;
     --delta: calc((1 - cos(asin(50vw / var(--planet-size)))) * var(--planet-size) * 2);
     
     /* Color Variables */
@@ -17,6 +18,13 @@
     --planet-atmosphere: rgba(0, 132, 255, 0.674);
     --text-color: #ffffff;
     --text-shadow: rgba(0, 0, 0, 0.7);
+    
+    /* New vibrant atmosphere colors */
+    --atmosphere-cyan: rgba(0, 255, 255, 0.3);
+    --atmosphere-purple: rgba(128, 0, 255, 0.3);
+    --atmosphere-pink: rgba(255, 0, 128, 0.3);
+    --atmosphere-orange: rgba(255, 128, 0, 0.3);
+    --atmosphere-green: rgba(0, 255, 128, 0.3);
 }
 
 * {
@@ -47,20 +55,19 @@ body {
 
 .planet-linear-glow {
     position: absolute;
-    bottom: -50px;
+    bottom: 0;
     left: 50%;
-    width: 85vw;
+    width: 100%;
     transform: translateX(-50%);
-    height: calc(var(--delta) / 100 * 1.1);
-    background: linear-gradient(to top, #ffffff 0%, #ffffff4f 30%, transparent 100%);
-    z-index: 1;
-    filter: blur(200px);
-    /* border: 1px solid blue; */
+    height: calc(var(--delta) / 100 * 1.4);
+    background: linear-gradient(0deg,rgba(255, 255, 255, 0.506) 0%, rgba(255, 255, 255, 0.189) 48%, rgba(255, 255, 255, 0) 100%);
+    z-index: 8;
+    filter: blur(50px);
 }
 
 .planet-halo {
     position: absolute;
-    top: calc(100% - var(--delta) - 6px);
+    top: calc(100% - var(--delta) - var(--halo-height));
     left: 50%;
     transform: translateX(-50%);
     width: var(--planet-size);
@@ -91,11 +98,9 @@ body {
     left: 0;
     bottom: 0;
     width: 100vw;
-    height: calc(var(--delta) / 100);
-    /* border: 1px solid red; */
-    background: linear-gradient(to top, var(--bg-color), transparent);
+    height: calc(var(--delta) / 25);
+    /* background: linear-gradient(to bottom, var(--bg-color), transparent); */
     z-index: 10;
-    /* backdrop-filter: blur(5px); */
 }
 
 .fadeout::before {
@@ -105,7 +110,8 @@ body {
     bottom: 0;
     width: var(--fadeout-width);
     height: 100vh;
-    background: linear-gradient(to right, var(--bg-color), transparent);
+    background: linear-gradient(90deg, #000000 0%, #000000e9 45%, transparent 100%);
+    /* filter: blur(50px); */
 }
 
 .fadeout::after {
@@ -115,7 +121,8 @@ body {
     bottom: 0;
     width: var(--fadeout-width);
     height: 100vh;
-    background: linear-gradient(to left, var(--bg-color), transparent);
+    background: linear-gradient(-90deg, #000000 0%, #000000e9 45%, transparent 100%);
+    /* filter: blur(50px); */
 }
 
 .atmosphere {
@@ -124,11 +131,50 @@ body {
     left: 50%;
     transform: translate(-50%, 50%);
     width: 15vw;
-    height: 120vh;
+    height: 170vh;
     border-radius: 50%;
     background: linear-gradient(to top, var(--planet-glow-blue), transparent);
     filter: blur(100px);
     z-index: 3;
+    animation: pulse 4s infinite alternate;
+}
+
+.center-glow {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, -15%);
+    width: 20vw;
+    height: 8vw;
+    border-radius: 50%;
+    background: #fff;
+    filter: blur(70px);
+    z-index: 4;
+}
+
+.center-glow::before {
+    content: "";
+    position: absolute;
+    bottom: 70%;
+    left: 50%;
+    width: 2px;
+    height: 300px;
+    transform: translateX(-50%);
+    background: #fff;
+    /* filter: blur(100px); */
+    z-index: 5;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, 50%) scale(1, 1);
+    }
+    50% {
+        transform: translate(-50%, 50%) scale(1.05, 1.1);
+    }
+    100% {
+        transform: translate(-50%, 50%) scale(1, 1);
+    }
 }
 
 .atmosphere-left {
@@ -147,7 +193,7 @@ body {
 .atmosphere-right {
     content: "";
     position: absolute;
-    bottom: -30%;
+    bottom: -10%;
     right: 8%;
     width: 50%;
     height: 100%;
@@ -155,4 +201,103 @@ body {
     background: linear-gradient(to top, rgba(128, 0, 122, 0.25), transparent);
     filter: blur(100px);
     z-index: 4;
+    animation: atmosphere-glow 3s ease-in-out infinite alternate;
+}
+
+.orbit-object {
+    position: absolute;
+    bottom: calc( -1 *  var(--fadeout-width) / 3.5);
+    width: calc(var(--fadeout-width) * 1.1);
+    height: calc(var(--fadeout-width) * 0.8);
+    border-radius: 50%;
+    filter: blur(100px);
+    margin: auto;
+}
+
+.orbit-object-left {
+    left: calc(50% - var(--fadeout-width) / 5);
+    background: conic-gradient(from 0deg, transparent, var(--atmosphere-green), var(--atmosphere-cyan) 50%, transparent 80%);
+    animation: rotate-in-place-cw 5.7s linear infinite forwards;
+    animation-duration: 5.7s;
+}
+
+.orbit-object-right {
+    right: calc(50% - var(--fadeout-width) / 5);
+    background: conic-gradient(from 0deg, transparent, var(--atmosphere-pink), var(--atmosphere-cyan) 50%, transparent 80%);
+    animation: rotate-in-place-ccw 6.5s linear infinite forwards;
+    animation-duration: 6.5s;
+}
+
+/* Keyframe animations */
+@keyframes rotate-in-place-cw {
+    from {
+        transform: rotate(0deg);
+        animation-duration: 5.7s;
+    }
+    to {
+        transform: rotate(360deg);
+        animation-duration: 3.7s;
+    }
+}
+
+@keyframes rotate-in-place-ccw {
+    from {
+        transform: rotate(0deg);
+        animation-duration: 6.2s;
+    }
+    to {
+        transform: rotate(-360deg);
+        animation-duration: 8.2s;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+@keyframes atmosphere-glow {
+    0% {
+        opacity: 0.6;
+        transform: translate(-50%, 50%) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, 50%) scale(1.1);
+    }
+}
+
+/* Enhanced static atmosphere elements */
+.atmosphere {
+    animation: atmosphere-glow 4s ease-in-out infinite alternate;
+}
+
+.atmosphere-left {
+    animation: atmosphere-glow 5s ease-in-out infinite alternate;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .orbit-object {
+        width: 30vw;
+        height: 30vw;
+        filter: blur(60px);
+    }
+    
+    .orbit-object-left,
+    .orbit-object-right {
+        width: 45%;
+        height: 80%;
+    }
+    
+    .orbit-object-center {
+        width: 25%;
+        height: 50%;
+    }
 }
