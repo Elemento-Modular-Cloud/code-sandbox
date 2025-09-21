@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  discourse:
+    image: discourse/discourse:latest
+    container_name: discourse
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DISCOURSE_HOSTNAME=your-domain.com
+      - DISCOURSE_DEVELOPER_EMAILS=admin@your-domain.com
+      - DISCOURSE_SMTP_ADDRESS=smtp.gmail.com
+      - DISCOURSE_SMTP_PORT=587
+      - DISCOURSE_SMTP_USER_NAME=your-email@gmail.com
+      - DISCOURSE_SMTP_PASSWORD=your-app-password
+      - DISCOURSE_SMTP_ENABLE_START_TLS=true
+      - DISCOURSE_SMTP_DOMAIN=your-domain.com
+      - DISCOURSE_DB_HOST=postgres
+      - DISCOURSE_DB_NAME=discourse
+      - DISCOURSE_DB_USERNAME=discourse
+      - DISCOURSE_DB_PASSWORD=your-secure-password
+      - DISCOURSE_REDIS_HOST=redis
+      - DISCOURSE_REDIS_PASSWORD=your-redis-password
+      - DISCOURSE_SECRET_KEY_BASE=your-secret-key
+      - DISCOURSE_CDN_URL=
+      - DISCOURSE_S3_ENDPOINT=
+      - DISCOURSE_S3_ACCESS_KEY_ID=
+      - DISCOURSE_S3_SECRET_ACCESS_KEY=
+      - DISCOURSE_S3_BUCKET=
+      - DISCOURSE_S3_REGION=
+      - DISCOURSE_S3_CDN_URL=
+      - DISCOURSE_S3_INSTALL_CORS_RULES=true
+      - DISCOURSE_S3_UPLOAD_BUCKET=
+      - DISCOURSE_S3_BACKUP_BUCKET=
+      - DISCOURSE_S3_MIGRATE_TO_S3=true
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - discourse_data:/var/discourse
+      - discourse_uploads:/var/discourse/shared/standalone/uploads
+      - discourse_backups:/var/discourse/shared/standalone/backups
+
+  postgres:
+    image: postgres:13
+    container_name: discourse_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=discourse
+      - POSTGRES_USER=discourse
+      - POSTGRES_PASSWORD=your-secure-password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6-alpine
+    container_name: discourse_redis
+    restart: unless-stopped
+    command: redis-server --requirepass your-redis-password
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+volumes:
+  discourse_data:
+  discourse_uploads:
+  discourse_backups:
+  postgres_data:
+  redis_data:
+
