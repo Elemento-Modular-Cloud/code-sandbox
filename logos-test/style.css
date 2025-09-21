@@ -1,0 +1,244 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    margin-bottom: 3rem;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.logo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.logo-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.logo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+
+.logo-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.logo-svg {
+    width: 200px;
+    height: auto;
+    max-height: 200px;
+    margin: 0 auto;
+    display: block;
+}
+
+
+.logo-description {
+    margin-top: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.logo-container {
+    position: relative;
+    display: inline-block;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+}
+
+.base-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+
+    height: auto;
+    max-height: 200px;
+    z-index: 1;
+}
+
+.ray-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center 104px;
+    width: 200px;
+    height: auto;
+    max-height: 200px;
+    z-index: 2;
+    opacity: 0.5;
+    animation: spin 0.05s linear infinite;
+}
+
+.ray-1 {
+    animation-delay: 0s;
+}
+
+.ray-2 {
+    animation-delay: 0.02s;
+}
+
+.ray-3 {
+    animation-delay: 0.04s;
+}
+
+.ray-4 {
+    animation-delay: 0.06s;
+}
+
+.ray-5 {
+    animation-delay: 0.01s;
+}
+
+.ray-6 {
+    animation-delay: 0.03s;
+}
+
+.ray-7 {
+    animation-delay: 0.05s;
+}
+
+.ray-8 {
+    animation-delay: 0.07s;
+}
+
+.ray-9 {
+    animation-delay: 0.008s;
+}
+
+.ray-10 {
+    animation-delay: 0.016s;
+}
+
+.ray-11 {
+    animation-delay: 0.024s;
+}
+
+.ray-12 {
+    animation-delay: 0.032s;
+}
+
+.ray-13 {
+    animation-delay: 0.04s;
+}
+
+.ray-14 {
+    animation-delay: 0.048s;
+}
+
+.ray-15 {
+    animation-delay: 0.056s;
+}
+
+.ray-16 {
+    animation-delay: 0.064s;
+}
+
+@keyframes spin {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .logo-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .logo-card {
+        padding: 1.5rem;
+    }
+    
+    .logo-svg {
+        width: 150px;
+    }
+    
+    .logo-container {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .base-logo {
+        width: 150px;
+        max-height: 150px;
+    }
+    
+    .ray-logo {
+        width: 90px;
+        max-height: 90px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 1rem;
+    }
+    
+    .logo-svg {
+        width: 120px;
+    }
+    
+    .logo-container {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .base-logo {
+        width: 120px;
+        max-height: 120px;
+    }
+    
+    .ray-logo {
+        width: 72px;
+        max-height: 72px;
+    }
+}
