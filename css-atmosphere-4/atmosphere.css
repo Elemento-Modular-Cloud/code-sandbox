@@ -1,0 +1,158 @@
+:root {
+    --planet-size: 300vw;
+    --atmosphere-thickness: 12vh;
+    --bg-color: #000;
+    --fadeout-width: 35vw;
+    --delta: calc((1 - cos(asin(50vw / var(--planet-size)))) * var(--planet-size) * 2);
+    
+    /* Color Variables */
+    --gradient-inner: #001122;
+    --gradient-outer: #000000;
+    --planet-base: #000;
+    --planet-glow-blue: rgba(0, 119, 255, 0.574);
+    --planet-glow-light: rgba(0, 166, 255, 0.4);
+    --planet-glow-dark: rgba(4, 0, 49, 0.3);
+    --planet-surface: rgb(0, 0, 0);
+    --planet-inset-glow: rgb(26, 125, 255);
+    --planet-atmosphere: rgba(0, 132, 255, 0.674);
+    --text-color: #ffffff;
+    --text-shadow: rgba(0, 0, 0, 0.7);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, var(--gradient-inner) 0%, var(--gradient-outer) 70%);
+    font-family: 'Arial', sans-serif;
+}
+
+.atmosphere-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    background-image: url('./bg.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    overflow: hidden;
+}
+
+.planet-linear-glow {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    width: 85vw;
+    transform: translateX(-50%);
+    height: calc(var(--delta) / 100 * 1.1);
+    background: linear-gradient(to top, #ffffff 0%, #ffffff4f 30%, transparent 100%);
+    z-index: 1;
+    filter: blur(200px);
+    /* border: 1px solid blue; */
+}
+
+.planet-halo {
+    position: absolute;
+    top: calc(100% - var(--delta) - 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--planet-size);
+    height: calc(var(--planet-size) * 1.1);
+    background-color: #fff;
+    box-shadow: 0 0 25px #fff;
+    border-radius: 50%;
+    z-index: 8;
+}
+
+/* Planet surface */
+.planet {
+    position: absolute;
+    top: calc(100% - var(--delta));
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--planet-size);
+    height: var(--planet-size);
+    background-color: var(--planet-base);
+    border-radius: 50%;
+    z-index: 9;
+    box-shadow: inset 0 0 25px #fff;
+}
+
+.fadeout {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    height: calc(var(--delta) / 100);
+    /* border: 1px solid red; */
+    background: linear-gradient(to top, var(--bg-color), transparent);
+    z-index: 10;
+    /* backdrop-filter: blur(5px); */
+}
+
+.fadeout::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: var(--fadeout-width);
+    height: 100vh;
+    background: linear-gradient(to right, var(--bg-color), transparent);
+}
+
+.fadeout::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: var(--fadeout-width);
+    height: 100vh;
+    background: linear-gradient(to left, var(--bg-color), transparent);
+}
+
+.atmosphere {
+    position: absolute;
+    bottom: 0%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    width: 15vw;
+    height: 120vh;
+    border-radius: 50%;
+    background: linear-gradient(to top, var(--planet-glow-blue), transparent);
+    filter: blur(100px);
+    z-index: 3;
+}
+
+.atmosphere-left {
+    content: "";
+    position: absolute;
+    bottom: -30%;
+    left: 8%;
+    width: 50%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(to top, rgba(0, 128, 0, 0.25), transparent);
+    filter: blur(100px);
+    z-index: 4;
+}
+
+.atmosphere-right {
+    content: "";
+    position: absolute;
+    bottom: -30%;
+    right: 8%;
+    width: 50%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(to top, rgba(128, 0, 122, 0.25), transparent);
+    filter: blur(100px);
+    z-index: 4;
+}
