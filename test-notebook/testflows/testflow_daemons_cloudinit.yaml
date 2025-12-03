@@ -1,0 +1,165 @@
+commands:
+  # ----------------------------------------- Cloudinit Metadata Tests -----------------------------------------
+  - name: Storage-Ping
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    expected_value: This is an Elemento Storage Client!
+    must_contain: Elemento
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/
+
+  - name: Cloudinit-Metadata-Upload-First
+    retries: 1
+    timeout: 30
+    expected_status_code: 206
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/eyJuYW1lIjoidGVzdC1tYW51YWxlLWNsb3VkaW5pdCIsInByaXZhdGUiOmZhbHNlLCJib290YWJsZSI6dHJ1ZSwiY2xvbmFibGUiOmZhbHNlLCJhbGciOiJubyIsImV4cGVjdGVkRmlsZXMiOjJ9 \
+      --header 'Content-Type: multipart/form-data' \
+      --form file=@utils/user-data
+
+  - name: Cloudinit-Metadata-Upload-Nofile
+    retries: 2
+    timeout: 30
+    expected_status_code: 400
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/eyJuYW1lIjoidGVzdC1tYW51YWxlLWNsb3VkaW5pdCIsInByaXZhdGUiOmZhbHNlLCJib290YWJsZSI6dHJ1ZSwiY2xvbmFibGUiOmZhbHNlLCJhbGciOiJubyIsImV4cGVjdGVkRmlsZXMiOjJ9 \
+      --header 'Content-Type: multipart/form-data'
+
+  - name: Cloudinit-Metadata-Upload-Second
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/your-vid-on-base64 \
+      --header 'Content-Type: multipart/form-data' \
+      --form file=@utils/meta-data
+
+  - name: Cloudinit-Get-Metadata-Volume
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    must_contain: 0029f69ba2a2455ab56e8c650113775e
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/info \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "volume_id": "your-volume-vid"
+        }'
+
+  - name: Cloudinit-Metadata-Upload-try-Third
+    retries: 2
+    timeout: 30
+    expected_status_code: 500
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/your-vid-on-base64 \
+      --header 'Content-Type: multipart/form-data' \
+      --form file=@utils/third-file
+
+  - name: Cloudinit-Metadata-Upload-Wrong-Base64
+    retries: 2
+    timeout: 30
+    expected_status_code: 400
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/eyJuYW1lIjoidGVzdC1tYW51YWxlLWNsb3VkaW5pdCIsInByaXZhdGUiOmZhbHNlLCJib290YWJsZSI6dHJ1ZSwiY2xvbmFibGUiOmZhbHNlLCJhbGciOiJubyIsImV4cGVjdGVkRmlsZXMiOj \
+      --form file=@utils/third-file
+
+  - name: Cloudinit-Delete-Volume
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "your-volume-vid"
+        }'
+
+  # ----------------------------------------- Cloud Image Tests -----------------------------------------
+  - name: Cloudimage-Create
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "test-manuale-cloudimage",
+        "private": false,
+        "clonable": true,
+        "alg": "cp",
+        "format": "qcow2",
+        "bus": "virtio",
+        "size": 64,
+        "url":"https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+        }'
+
+  - name: Cloudimage-Get-Volume
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    must_contain: test-manuale-cloudimage
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/info \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "your-cloudimage-volume-vid"
+        }'
+
+  - name: Cloudimage-Create-Missing-Params
+    retries: 2
+    timeout: 30
+    expected_status_code: 400
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "test-manuale-cloudimage",
+        "private": false,
+        "clonable": true,
+        "alg": "cp",
+        "format": "qcow2",
+        "bus": "virtio"
+        }'
+
+  - name: Cloudimage-Create-Wrong-URL
+    retries: 2
+    timeout: 30
+    expected_status_code: 400
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "test-manuale-cloudimage",
+        "private": false,
+        "clonable": true,
+        "alg": "cp",
+        "format": "qcow2",
+        "bus": "virtio",
+        "size": 64,
+        "url":"http://wrong-url.img"
+        }'
+
+  - name: Cloudimage-Delete-Volume
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "your-cloudimage-volume-vid"
+        }'

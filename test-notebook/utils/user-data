@@ -1,0 +1,23 @@
+#cloud-config
+
+# 1. Create a user, set password, and add to the 'sudo' group
+users:
+  - name: root
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    lock_passwd: false
+
+ssh_pwauth: true
+
+chpasswd:
+  list: |
+    root:password
+  expire: false
+
+# 2. Configure the network settings
+hostname: myhost
+network:
+  version: 2
+  ethernets:
+    ens3:
+      dhcp4: true
