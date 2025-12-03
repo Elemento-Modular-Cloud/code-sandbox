@@ -8,8 +8,8 @@ commands:
       --url http://127.0.0.1:47777/api/v1/authenticate/login \
       --header 'Content-Type: application/json' \
       --data '{
-        "username": "testdrive@elemento.cloud",
-        "password": "elemento"
+        "username": "your-email",
+        "password": "your-pwd"
       }'
       
   - name: Matcher-Ping
