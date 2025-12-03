@@ -128,7 +128,7 @@ commands:
         "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
         "pci": [],
         "volumes":[
-            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0},
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0}
         ],
         "has_network": true,
         "networks": [
