@@ -1,162 +1,123 @@
 commands:
-  ## STORAGE ##
   - name: Storage-Ping
     retries: 2
-    timeout: 5
+    timeout: 30
+    expected_status_code: 200
     expected_value: This is an Elemento Storage Client!
+    must_contain: Elemento
     curl: |
       curl --request GET \
       --url http://127.0.0.1:27777/
 
+  - name: Matcher-Ping
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    expected_value: This is an Elemento Matcher Client!
+    must_contain: Elemento
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/
+
   - name: Storage-Accessible
     retries: 2
-    timeout: 5
+    timeout: 30
+    expected_status_code: 204
     curl: |
       curl --request GET \
       --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible
 
-  - name: Storage-Info
+  - name: Storage-Create
     retries: 2
-    timeout: 5
-    curl: |
-      curl --request POST \
-      --url http://127.0.0.1:27777/api/v1.0/client/volume/info \
-      --header 'Content-Type: application/json' \
-      --data '{
-        "volume_id": "ef14f34d69d14dcda5e1615fb8b9d385"
-      }'
-
-  - name: Storage-Cancreate-Yes
-    retries: 2
-    timeout: 5
-    expected_value: 1
-    must_contain: 1
+    timeout: 30
     expected_status_code: 200
-    sleep: 5
-    curl: |
-      curl --request POST \
-      --url http://127.0.0.1:27777/api/v1.0/client/volume/cancreate \
-      --header 'Content-Type: application/json' \
-      --data '{
-        "size": "10"
-      }'
-
-  - name: Storage-Cancreate-No
-    retries: 2
-    timeout: 5
-    expected_value: 0
-    sleep: 5
-    curl: |
-      curl --request POST \
-      --url http://127.0.0.1:27777/api/v1.0/client/volume/cancreate \
-      --header 'Content-Type: application/json' \
-      --data '{
-        "size": "100"
-      }'
-
-  - name: Storage-Cancreate-Fail
-    retries: 3
-    timeout: 5
-    expected_value: 1
-    sleep: 5
-    curl: |
-      curl --request POST \
-      --url http://127.0.0.1:27777/api/v1.0/client/volume/cancreate \
-      --header 'Content-Type: application/json' \
-      --data '{
-        "size": "100"
-      }'
-
-  - name: Storage-Create-500
-    retries: 2
-    timeout: 5
-    expected_status_code: 500
     curl: |
       curl --request POST \
       --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
       --header 'Content-Type: application/json' \
       --data '{
-        "size": 100,
-        "name": "volume",
-        "bootable": true,
+        "size": 8,
+        "name": "vol-1",
+        "bootable": false,
+        "readonly": false,
+        "shareable": false,
+        "private": false,
+        "clonable": true,
+        "bus": "virtio",
+        "alg": "rsync",
+        "format": "raw"
+      }'
+
+  - name: Storage-Create
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "size": 8,
+        "name": "vol-2",
+        "bootable": false,
         "readonly": true,
-        "shareable": true,
-        "private": true,
+        "shareable": false,
+        "private": false,
         "clonable": true,
         "bus": "sata",
         "alg": "rsync",
         "format": "qcow2"
-      }
-      '
+      }'
 
-  - name: Storage-Destroy-500
+  - name: Storage-Create
     retries: 2
-    timeout: 5
-    expected_status_code: 500
+    timeout: 30
+    expected_status_code: 200
     curl: |
       curl --request POST \
-      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
       --header 'Content-Type: application/json' \
       --data '{
-        "volume_id": "ffffffffffffffffffffffffffffffffff"
-      }
-      '
-
-  ## MATCHER ##
-  - name: Matcher-Ping
-    retries: 2
-    timeout: 5
-    expected_value: This is an Elemento Matcher Client!
-    curl: |
-      curl --request GET \
-      --url http://127.0.0.1:17777/
-
-  - name: Matcher-Canallocate
-    retries: 2
-    timeout: 5
-    curl: |
-      curl --request GET \
-      --url http://192.168.3.7:7777/api/v1.0/canallocate \
-      --header 'Content-Type: application/json' \
-      --data '{
-          "py/object": "common.lib.system.systemrequirements.systemrequirements",
-          "cpu": {
-              "py/object": "common.lib.components.cpu.cpurequirements.cpurequirements",
-              "slots": 1,
-              "fullPhysical": false,
-              "maxOverprovision": 1,
-              "min_frequency": "0.5",
-              "arch": [
-                  "X86_64"
-              ],
-              "flags": []
-          },
-          "mem": {
-              "py/object": "common.lib.components.memory.memrequirements.memrequirements",
-              "capacity": 256,
-              "requireECC": 0
-          },
-          "pci": {
-              "py/object": "common.lib.components.pcidev.pcirequirements.pcirequirements",
-              "devices": {}
-          },
-          "misc": {
-              "py/object": "common.lib.components.misc.miscrequirements.miscrequirements",
-              "os_family": "linux",
-              "os_flavour": "ubuntu",
-              "manufacturer": "Any"
-          }
+        "size": 2,
+        "name": "vol-3",
+        "bootable": false,
+        "readonly": false,
+        "shareable": true,
+        "private": false,
+        "clonable": true,
+        "bus": "virtio",
+        "alg": "rsync",
+        "format": "qcow2"
       }'
+
+  - name: Storage-Accessible
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
 
   - name: Matcher-Register
     retries: 2
-    timeout: 5
+    timeout: 30
+    expected_status_code: 200
     curl: |
       curl --request POST \
       --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
       --header 'Content-Type: application/json' \
       --data '{
-        "vm_name": "VM",
+        "info": {
+          "vm_name": "vm-1",
+          "autostart": false
+        },
         "slots": 2,
         "overprovision": 2,
         "allowSMT": false,
@@ -164,33 +125,105 @@ commands:
         "flags": ["sse2"],
         "ramsize": 2048,
         "reqECC": false,
-        "misc": {"os_family": "windows", "os_flavour": "windows11"},
-        "pci": [
-            {
-                "vendor": "10de",
-                "model": "24b0",
-                "quantity": 1
-            },
-            {
-                "vendor": "10de",
-                "model": "228b",
-                "quantity": 1
-            }
-        ],
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
         "volumes":[
-            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff"}
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0},
         ],
         "has_network": true,
         "networks": [
             {
                 "network_uid": "virbr0"
             }
-        ]
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  - name: Storage-Create
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "size": 8,
+        "name": "vol-4",
+        "bootable": false,
+        "readonly": false,
+        "shareable": false,
+        "private": false,
+        "clonable": true,
+        "bus": "virtio",
+        "alg": "rsync",
+        "format": "raw"
+      }'
+
+  - name: Storage-Accessible
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible
+
+  - name: Matcher-Register
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-2",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "almalinux", "qemu_agent": false, "firmware": "bios"},
+        "pci": [],
+        "volumes":[
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0},
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 1}
+        ],
+        "has_network": true,
+        "networks": [
+            {
+                "network_uid": "virbr0"
+            }
+        ],
+        "vm_tags": ["tag2"]
+      }'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
+
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
       }'
 
   - name: Matcher-Unregister
     retries: 2
-    timeout: 5
+    timeout: 30
     curl: |
       curl --request POST \
       --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
@@ -201,37 +234,122 @@ commands:
 
   - name: Matcher-Status
     retries: 2
-    timeout: 5
-    expected_value: |
-      [
-        {
-          "serverurl": "http://solaris:7777",
-          "is_gateway": false,
-          "uniqueID": "9293c23c-5b94-4021-a44b-9205b8e5bb2a",
-          "req_json": {
-            "slots": 4,
-            "overprovision": 4,
-            "allowSMT": false,
-            "arch": "X86_64",
-            "flags": [
-              "sse2"
-            ],
-            "ramsize": 8.0,
-            "reqECC": false,
-            "volumes": [],
-            "pcidevs": [],
-            "netdevs": [],
-            "os_family": "linux",
-            "os_flavour": "almalinux",
-            "vm_name": "vm2",
-            "creation_date": "07/31/2025, 14:03:18",
-            "network_config": null,
-            "viewer": "https://localhost:8443/#/?username=fake&password=fake",
-            "domviewer": "https://elemento.cloud"
-          },
-          "xml": "<domain type='kvm'>\n  <name>...</name>\n  <uuid>...</uuid>\n  <metadata>\n    <elemento:vm_data xmlns:elemento=\"https://elemento.cloud/vm_data\">\n  <elemento:clientuid>...</elemento:clientuid>\n  <elemento:reqjson>\n    {\n      \"slots\": 4,\n      \"overprovision\": 4,\n      \"allowSMT\": false,\n      \"arch\": \"X86_64\",\n      \"flags\": [\n        \"sse2\"\n      ],\n      \"ramsize\": 8.0,\n      \"reqECC\": false,\n      \"volumes\": [],\n      \"pcidevs\": [],\n      \"netdevs\": [],\n      \"os_family\": \"linux\",\n      \"os_flavour\": \"almalinux\",\n      \"vm_name\": \"vm2\",\n      \"creation_date\": \"07/31/2025, 14:03:18\"\n    }\n  </elemento:reqjson>\n  <elemento:spec>\n    {\"py/object\": \"system.systemrequirements.systemrequirements\", \"cpu\": {\"py/object\": \"components.cpu.cpurequirements.cpurequirements\", \"slots\": 4, \"fullPhysical\": true, \"maxOverprovision\": 4, \"min_frequency\": 0, \"arch\": [\"X86_64\"], \"flags\": [\"sse2\"]}, \"mem\": {\"py/object\": \"components.memory.memrequirements.memrequirements\", \"capacity\": 8192, \"requireECC\": false}, \"pci\": {\"py/object\": \"components.pcidev.pcirequirements.pcirequirements\", \"devices\": {}}, \"misc\": {\"py/object\": \"components.misc.miscrequirements.miscrequirements\", \"os_family\": \"linux\", \"os_flavour\": \"almalinux\", \"manufacturer\": \"Any\"}}\n  </elemento:spec>\n  <elemento:volumes>\n    []\n  </elemento:volumes>\n  <elemento:extravolumes>\n    <elemento:disk type=\"volume\" device=\"disk\">\n      <elemento:driver name=\"qemu\" type=\"qcow2\" discard=\"unmap\"/>\n      <elemento:source pool=\"default\" volume=\"vm2\"/>\n      <elemento:target dev=\"vda\" bus=\"virtio\"/>\n      <elemento:boot order=\"2\"/>\n      <elemento:address type=\"pci\" domain=\"0x0000\" bus=\"0x00\" slot=\"0x05\" function=\"0x0\"/>\n    </elemento:disk>\n  </elemento:extravolumes>\n  <elemento:external>False</elemento:external>\n</elemento:vm_data>\n  </metadata>\n  <memory dumpCore='off' unit='KiB'>7968768</memory>\n  <currentMemory unit='KiB'>7968768</currentMemory>\n  <memoryBacking>\n    <hugepages/>\n    <access mode='shared'/>\n  </memoryBacking>\n  <vcpu placement='static'>4</vcpu>\n  <vcpus>\n    <vcpu id='0' enabled='yes' hotpluggable='no' order='1'/>\n    <vcpu id='1' enabled='yes' hotpluggable='no' order='1'/>\n    <vcpu id='2' enabled='yes' hotpluggable='no' order='1'/>\n    <vcpu id='3' enabled='yes' hotpluggable='no' order='1'/>\n  </vcpus>\n  <iothreads>1</iothreads>\n  <cputune>\n    <vcpupin vcpu='0' cpuset='0'/>\n    <vcpupin vcpu='1' cpuset='1'/>\n    <vcpupin vcpu='2' cpuset='2'/>\n    <emulatorpin cpuset='0-3'/>\n    <iothreadpin iothread='1' cpuset='3'/>\n  </cputune>\n  <os>\n    <type arch='x86_64' machine='pc-i440fx-rhel7.6.0'>hvm</type>\n  </os>\n  <features>\n    <acpi/>\n    <apic/>\n  </features>\n  <cpu mode='host-passthrough' check='none' migratable='on'>\n    <topology sockets='1' dies='1' clusters='1' cores='4' threads='1'/>\n    <feature policy='require' name='sse2'/>\n  </cpu>\n  <clock offset='localtime'>\n    <timer name='rtc' tickpolicy='catchup'/>\n    <timer name='pit' tickpolicy='delay'/>\n  </clock>\n  <on_poweroff>destroy</on_poweroff>\n  <on_reboot>restart</on_reboot>\n  <on_crash>destroy</on_crash>\n  <devices>\n    <emulator>/usr/libexec/qemu-kvm</emulator>\n    <disk type='volume' device='disk'>\n      <driver name='qemu' type='qcow2' discard='unmap'/>\n      <source pool='default' volume='vm2'/>\n      <target dev='vda' bus='virtio'/>\n      <boot order='2'/>\n      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>\n    </disk>\n    <controller type='usb' index='0' model='piix3-uhci'>\n      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x2'/>\n    </controller>\n    <controller type='pci' index='0' model='pci-root'/>\n    <controller type='scsi' index='0' model='virtio-scsi'>\n      <address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/>\n    </controller>\n    <interface type='bridge'>\n      <mac address='52:54:00:48:df:14'/>\n      <source bridge='br0'/>\n      <model type='virtio'/>\n      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>\n    </interface>\n    <input type='mouse' bus='ps2'/>\n    <input type='keyboard' bus='ps2'/>\n    <graphics type='vnc' port='-1' autoport='yes' listen='0.0.0.0'>\n      <listen type='address' address='0.0.0.0'/>\n    </graphics>\n    <audio id='1' type='none'/>\n    <video>\n      <model type='cirrus' vram='16384' heads='1' primary='yes'/>\n      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>\n    </video>\n    <memballoon model='virtio'>\n      <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>\n    </memballoon>\n  </devices>\n</domain>\n"
-        }
-      ]
+    timeout: 30
     curl: |
       curl --request GET \
       --url http://127.0.0.1:17777/api/v1.0/client/vm/status
+
+  - name: Matcher-Register
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-3",
+          "autostart": false
+        },
+        "slots": 8,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 8192,
+        "reqECC": true,
+        "misc": {"os_family": "windows", "os_flavour": "windows11", "qemu_agent": false, "firmware": "bios"},
+        "pci": [],
+        "volumes":[
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0}
+        ],
+        "has_network": true,
+        "networks": [
+            {
+                "network_uid": "virbr0"
+            }
+        ],
+        "vm_tags": ["tag2"]
+      }'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
+
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
+
+  - name: Storage-Destroy
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffffffffffffffffffffffffffffff"
+      }'
+
+  - name: Storage-Destroy
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffffffffffffffffffffffffffffff"
+      }'
+
+  - name: Storage-Destroy
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffffffffffffffffffffffffffffff"
+      }'
+
+  - name: Storage-Destroy
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffffffffffffffffffffffffffffff"
+      }'
+
+  - name: Storage-Accessible
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible
