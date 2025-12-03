@@ -13,6 +13,7 @@ To generate the notebook:
 ```bash
 python3 generate_tests_notebook.py # will use testflow.yaml (default)
 python3 generate_tests_notebook.py --config testflows/testflow_daemons.yaml
+python3 generate_tests_notebook.py --config testflows/testflow_atomos.yaml --output notebooks/test_notebook_atomos.ipynb --default-addr your.ip.v4.addr
 ```
 
 ## YAML file config

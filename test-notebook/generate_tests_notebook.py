@@ -5,11 +5,25 @@ import argparse
 import logging
 import nbformat
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+
+def _replace_in_obj(obj: Any, placeholder: str, replacement: str) -> Any:
+    """
+    Recursively replace placeholder in YAML values (strings, list items, nested dicts).
+    NOTE: Keys are not modified.
+    """
+    if isinstance(obj, dict):
+        return {k: _replace_in_obj(v, placeholder, replacement) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_replace_in_obj(item, placeholder, replacement) for item in obj]
+    if isinstance(obj, str):
+        return obj.replace(placeholder, replacement)
+    return obj
 
 
 class ConfigValidationError(Exception):
@@ -21,14 +35,32 @@ class ConfigValidationError(Exception):
 class NotebookGenerator:
     """Generates test notebooks from YAML config."""
 
-    def __init__(self, config_path: Path, output_path: Path):
+    def __init__(self, config_path: Path, output_path: Path, default_addr: str = None):
+        self.default_addr = default_addr
         self.config_path = config_path
         self.output_path = output_path
-        self.config: Dict[str, Any] = {}
+        self.config: dict[str, Any] = {}
+
+    def _replace_placeholder_in_yaml_file(self, placeholder: str = "{{IP}}") -> str:
+        dumper_kwargs = {"default_flow_style": False, "sort_keys": False}
+
+        with open(self.config_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+
+        new_data = _replace_in_obj(data, placeholder, self.default_addr)
+        result_yaml = yaml.safe_dump(new_data, **dumper_kwargs)
+
+        self.config_path = self.config_path.with_name(self.config_path.stem + "_loaded" + self.config_path.suffix)
+        with open(self.config_path, "w", encoding="utf-8") as f:
+            f.write(result_yaml)
+
+        return result_yaml
 
     def load_config(self) -> None:
         """Load and validate the YAML configuration."""
         try:
+            if self.default_addr:
+                self._replace_placeholder_in_yaml_file()
             with open(self.config_path, "r", encoding="utf-8") as f:
                 self.config = yaml.safe_load(f)
             logger.info(f"Loaded configuration from {self.config_path}")
@@ -202,7 +234,7 @@ def run(name, cmd, retries, timeout_sec, sleep_sec, expected_status_code, expect
 """
         return new_code_cell(code)
 
-    def _create_test_cell(self, cmd: Dict[str, Any]) -> nbformat.NotebookNode:
+    def _create_test_cell(self, cmd: dict[str, Any]) -> nbformat.NotebookNode:
         """Create a test cell for each command."""
         name = cmd["name"]
         retries = cmd.get("retries", 1)
@@ -288,6 +320,12 @@ def main():
         default="test_notebook.ipynb",
         help="Output notebook path (default: test_notebook.ipynb)",
     )
+    parser.add_argument(
+        "--default-addr",
+        type=str,
+        default=None,
+        help="Address used to replace placeholder {{IP}}",
+    )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
@@ -296,7 +334,7 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
 
     try:
-        generator = NotebookGenerator(args.config, args.output)
+        generator = NotebookGenerator(args.config, args.output, args.default_addr)
         generator.load_config()
         generator.generate_notebook()
 

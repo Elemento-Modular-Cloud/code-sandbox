@@ -5,14 +5,14 @@ commands:
     timeout: 5
     curl: |
       curl --request GET \
-      --url http://{IP}:7772/
+      --url http://{{IP}}:7772/
 
   - name: Storage-Cancreate
     retries: 2
     timeout: 5
     curl: |
       curl --request GET \
-      --url http://{IP}:7772/api/v1.0/cancreate \
+      --url http://{{IP}}:7772/api/v1.0/cancreate \
       --data '{
         "creatorID": "ffffffffffffffffffffffffffffffff",
         "name": "volume",
@@ -28,7 +28,7 @@ commands:
     timeout: 5
     curl: |
       curl --request POST \
-      --url http://{IP}:7772/api/v1.0/info \
+      --url http://{{IP}}:7772/api/v1.0/info \
       --header 'Content-Type: application/json' \
       --data '{
         "volume_id": "ffffffffffffffffffffffffffffffff"
@@ -39,7 +39,7 @@ commands:
     timeout: 5
     curl: |
       curl --request POST \
-      --url http://{IP}:7772/api/v1.0/accessible \
+      --url http://{{IP}}:7772/api/v1.0/accessible \
       --data '{
         "client_uid": "5e96afa52c1a53348adc5c5663978058"
       }'
@@ -49,7 +49,7 @@ commands:
     timeout: 5
     curl: |
       curl --request POST \
-      --url http://{IP}:7772/api/v1.0/create \
+      --url http://{{IP}}:7772/api/v1.0/create \
       --header 'Content-Type: application/json' \
       --data '{
         "creatorID": "ffffffffffffffffffffffffffffffff",
@@ -70,7 +70,7 @@ commands:
     timeout: 5
     curl: |
       curl --request POST \
-      --url http://{IP}:7772/api/v1.0/destroy \
+      --url http://{{IP}}:7772/api/v1.0/destroy \
       --header 'Content-Type: application/json' \
       --data '{
         "volumeID": "ffffffffffffffffffffffffffffffff"
@@ -81,7 +81,7 @@ commands:
     timeout: 5
     curl: |
       curl --request POST \
-      --url http://{IP}:7772/api/v1.0/export \
+      --url http://{{IP}}:7772/api/v1.0/export \
       --data '{
         "client_uid": "5e96afa52c1a53348adc5c5663978058",
         "volume_id": "1d33c321bf1449d4a9fbc5f960ac5035"
@@ -92,7 +92,7 @@ commands:
     timeout: 5
     curl: |
       curl --request POST \
-      --url http://{IP}:7772/api/v1.0/unexport \
+      --url http://{{IP}}:7772/api/v1.0/unexport \
       --data '{
         "client_uid": "5e96afa52c1a53348adc5c5663978058",
         "volume_id": "1d33c321bf1449d4a9fbc5f960ac5035"
@@ -104,28 +104,28 @@ commands:
     timeout: 5
     curl: |
       curl --request GET \
-      --url http://{IP}:7777/
+      --url http://{{IP}}:7777/
 
   - name: Matcher-Status
     retries: 2
     timeout: 5
     curl: |
       curl --request GET \
-      --url http://{IP}:7777/api/v1.0/status
+      --url http://{{IP}}:7777/api/v1.0/status
 
   - name: Matcher-StatusJson
     retries: 2
     timeout: 5
     curl: |
       curl --request GET \
-      --url http://{IP}:7777/api/v1.0/statusjson
+      --url http://{{IP}}:7777/api/v1.0/statusjson
 
   - name: Matcher-Canallocate
     retries: 2
     timeout: 5
     curl: |
       curl --request GET \
-      --url http://{IP}:7777/api/v1.0/canallocate \
+      --url http://{{IP}}:7777/api/v1.0/canallocate \
       --header 'Content-Type: application/json' \
       --data '{
           "py/object": "common.lib.system.systemrequirements.systemrequirements",
@@ -162,7 +162,7 @@ commands:
     timeout: 5
     curl: |
       curl --request POST \
-      --url http://{IP}:7777/api/v1.0/register \
+      --url http://{{IP}}:7777/api/v1.0/register \
       --header 'Content-Type: application/json' \
       --data '{
           "client_uid": 5e96afa52c1a53348adc5c5663978058,
@@ -221,7 +221,7 @@ commands:
     timeout: 5
     curl: |
       curl --request DELETE \
-      --url http://{IP}:7777/api/v1.0/unregister \
+      --url http://{{IP}}:7777/api/v1.0/unregister \
       --header 'Content-Type: application/json' \
       --data '{
         "client_uid": "5e96afa52c1a53348adc5c5663978058",
@@ -233,7 +233,7 @@ commands:
     timeout: 5
     curl: |
       curl --request GET \
-      --url http://{IP}:7777/api/v1.0/running \
+      --url http://{{IP}}:7777/api/v1.0/running \
       --header 'Content-Type: application/json' \
       --data '{
         "client_uid": "5e96afa52c1a53348adc5c5663978058"
@@ -244,4 +244,4 @@ commands:
     timeout: 5
     curl: |
       curl --request GET \
-      --url 'http://{IP}:7777/api/v1.0/usage?start_date=2025-01-01%2000%3A00%3A00&end_date=2025-12-31%2023%3A59%3A59'
+      --url 'http://{{IP}}:7777/api/v1.0/usage?start_date=2025-01-01%2000%3A00%3A00&end_date=2025-12-31%2023%3A59%3A59'
