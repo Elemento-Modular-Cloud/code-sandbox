@@ -8,9 +8,9 @@ commands:
       --url http://127.0.0.1:47777/api/v1/authenticate/login \
       --header 'Content-Type: application/json' \
       --data '{
-        "username": "admin@test.test",
-        "password": "admin",
-        "org": "zio-pera-srl"
+        "username": "your-email",
+        "password": "your-pwd"
+        "org": "your-org
       }'
   
   - name: Auth-Status
