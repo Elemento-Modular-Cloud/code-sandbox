@@ -1,0 +1,230 @@
+commands:
+  - name: Login
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:47777/api/v1/authenticate/login \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "username": "admin@test.test",
+        "password": "admin",
+        "org": "zio-pera-srl"
+      }'
+  
+  - name: Auth-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:47777/api/v1/authenticate/status
+
+  - name: Matcher-Register-Fail-Due-To-Ram-Org-Limit-Exceeded
+    retries: 2
+    timeout: 30
+    expected_status_code: 404
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-1",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 8192,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  - name: Matcher-Register
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-1",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 4096,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  - name: Matcher-Register-Fail-Due-To-Org-Limit-Exceeded
+    retries: 2
+    timeout: 30
+    expected_status_code: 404
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-2",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Storage-Create
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "size": 8,
+        "name": "vol-1",
+        "bootable": false,
+        "readonly": true,
+        "shareable": false,
+        "private": false,
+        "clonable": true,
+        "bus": "sata",
+        "alg": "rsync",
+        "format": "qcow2"
+      }'
+
+  - name: Matcher-Register-Fail-Due-To-Storage-Org-Limit-Exceeded
+    retries: 2
+    timeout: 30
+    expected_status_code: 404
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-1",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[
+          {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0}
+        ],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  - name: Storage-Destroy
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Register-Fail-Due-To-Slot-Org-Limit-Exceeded
+    retries: 2
+    timeout: 30
+    expected_status_code: 404
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-1",
+          "autostart": false
+        },
+        "slots": 6,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  

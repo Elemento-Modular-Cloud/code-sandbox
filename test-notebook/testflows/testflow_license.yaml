@@ -1,0 +1,226 @@
+commands:
+  - name: Login
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:47777/api/v1/authenticate/login \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "username": "testdrive@elemento.cloud",
+        "password": "elemento"
+      }'
+      
+  - name: Matcher-Ping
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    expected_value: This is an Elemento Matcher Client!
+    must_contain: Elemento
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/
+
+  - name: Matcher-Register
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-1",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  - name: Matcher-Register
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-2",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
+  
+  - name: Matcher-Register-Fail-Due-To-License-Limit-Exceeded
+    retries: 2
+    timeout: 30
+    expected_status_code: 404
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-3",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+  
+  - name: License-List
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:47777/api/v1/authenticate/license/list
+    
+  - name: License-Arm
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:47777/api/v1/authenticate/license/arm \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "license_key": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+  
+  - name: Matcher-Register
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-3",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+          {
+            "network_uid": "virbr0"
+          }
+        ],
+        "vm_tags": ["tag1"]
+      }'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
+
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    expected_value: "[]"
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
