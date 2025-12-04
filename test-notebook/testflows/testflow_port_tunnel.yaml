@@ -1,1 +1,296 @@
-# TODO
+commands:
+  # ----------------------------------------- Port Tunnel Tests -----------------------------------------
+  - name: Matcher-Ping
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    expected_value: This is an Elemento Matcher Client!
+    must_contain: Elemento
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/
+  
+  - name: Port-Tunnel-Get-Status
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/status
+  
+  - name: Cloudinit-Metadata-Upload-First
+    retries: 1
+    timeout: 30
+    expected_status_code: 206
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/eyJuYW1lIjoidGVzdC1tYW51YWxlLWNsb3VkaW5pdCIsInByaXZhdGUiOmZhbHNlLCJib290YWJsZSI6dHJ1ZSwiY2xvbmFibGUiOmZhbHNlLCJhbGciOiJubyIsImV4cGVjdGVkRmlsZXMiOjJ9 \
+      --header 'Content-Type: multipart/form-data' \
+      --form file=@utils/user-data
+  
+  - name: Cloudinit-Metadata-Upload-Second
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/your-vid-on-base64 \
+      --header 'Content-Type: multipart/form-data' \
+      --form file=@utils/meta-data
+
+  - name: Cloudimage-Create
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "test-cloudimage-port-tunnel",
+        "private": false,
+        "clonable": true,
+        "alg": "cp",
+        "format": "qcow2",
+        "bus": "virtio",
+        "size": 64,
+        "url":"https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+        }'
+  
+  - name: Storage-Create
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "size": 64,
+        "name": "main-vol-test-port-tunnel",
+        "bootable": false,
+        "readonly": false,
+        "shareable": false,
+        "private": false,
+        "clonable": true,
+        "bus": "virtio",
+        "alg": "rsync",
+        "format": "raw"
+      }'
+
+  - name: Create-Network
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://localhost:17777/api/v1.0/client/network/create \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "servers": ["https://149.81.129.251:7776"],
+        "network_name": "test-port-tunnel-network",
+        "type": "libvirt",
+        "mode": null,
+        "private": true,
+        "ip": {
+          "address": "192.168.10.1/24",
+          "dhcp": {
+            "start": "192.168.10.10",
+            "end": "192.168.10.20",
+            "hosts": []
+          }
+        },
+        "routes": []
+      }'
+  
+  - name: Create-Vm
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://localhost:17777/api/v1.0/client/vm/create \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "info": {
+          "vm_name": "vm-test-port-tunnel",
+          "autostart": false
+        },
+        "slots": 4,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 4096,
+        "reqECC": true,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu", "qemu_agent": false, "firmware": "bios"},
+        "pci": [],
+        "volumes":[
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0},
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 1},
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 2}
+        ],
+        "has_network": true,
+        "networks": [
+            {
+                "network_uid": "virbr0"
+            }
+        ],
+        "vm_tags": ["tag2"]
+      }'
+
+  - name: Port-Tunnel-Start-Ssh-Tunnel
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/start \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "server_host": "orbital-amethyst",
+        "server_port": 4242,
+        "vm_uuid": "ffffffff-fffff-ffff-ffff-ffffffffffff",
+        "service": "ssh"
+      }'
+
+  - name: Port-Tunnel-Get-Status
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    must_contain: '"service": "ssh"'
+    curl: |
+      curl --request GET \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/status
+  
+  - name: Port-Tunnel-Start-Vnc-Tunnel
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/start \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "server_host": "orbital-amethyst",
+        "server_port": 4242,
+        "vm_uuid": "ffffffff-fffff-ffff-ffff-ffffffffffff",
+        "service": "vnc-via-host"
+      }'
+
+  - name: Port-Tunnel-Get-Status
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    must_contain: '"service": "vnc-via-host"'
+    curl: |
+      curl --request GET \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/status
+
+  - name: Port-Tunnel-Start-Kubectl-Tunnel
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/start \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "server_host": "orbital-amethyst",
+        "server_port": 4242,
+        "vm_uuid": "ffffffff-fffff-ffff-ffff-ffffffffffff",
+        "service": "kubectl"
+      }'
+
+  - name: Port-Tunnel-Get-Status
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    must_contain: '"service": "kubectl"'
+    curl: |
+      curl --request GET \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/status
+
+  - name: Port-Tunnel-Start-Rdp-Tunnel
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/start \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "server_host": "orbital-amethyst",
+        "server_port": 4242,
+        "vm_uuid": "ffffffff-fffff-ffff-ffff-ffffffffffff",
+        "service": "rdp"
+      }'
+
+  - name: Port-Tunnel-Get-Status
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    must_contain: '"service": "rdp"'
+    curl: |
+      curl --request GET \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/status
+
+# ----------------------------------------- Cleanup -----------------------------------------
+  - name: Port-Tunnel-Stop
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/stop \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "port": 2420,
+      }'
+  
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Delete-Network
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request DELETE \
+      --url http://localhost:17777/api/v1.0/client/network/delete \
+      --header 'Content-Type: application/json' \
+      --body '{
+        "network_uid": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+  
+  - name: Storage-Destroy
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Cloudinit-Delete-Volume
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+        }'
