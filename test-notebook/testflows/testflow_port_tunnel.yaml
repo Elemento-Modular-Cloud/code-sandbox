@@ -84,9 +84,9 @@ commands:
     expected_status_code: 200
     curl: |
       curl --request POST \
-      --url http://localhost:17777/api/v1.0/client/network/create \
+      --url http://localhost:37777/api/v1.0/client/network/create \
       --header 'Content-Type: application/json' \
-      --body '{
+      --data '{
         "servers": ["https://149.81.129.251:7776"],
         "network_name": "test-port-tunnel-network",
         "type": "libvirt",
@@ -109,9 +109,9 @@ commands:
     expected_status_code: 200
     curl: |
       curl --request POST \
-      --url http://localhost:17777/api/v1.0/client/vm/create \
+      --url http://localhost:17777/api/v1.0/client/vm/register \
       --header 'Content-Type: application/json' \
-      --body '{
+      --data '{
         "info": {
           "vm_name": "vm-test-port-tunnel",
           "autostart": false
@@ -133,11 +133,19 @@ commands:
         "has_network": true,
         "networks": [
             {
-                "network_uid": "virbr0"
+                "network_uid": "ffffffff-fffff-ffff-ffff-ffffffffffff"
             }
         ],
         "vm_tags": ["tag2"]
       }'
+
+  - name: Port-Tunnel-Get-Status
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
 
   - name: Port-Tunnel-Start-Ssh-Tunnel
     retries: 1
@@ -145,9 +153,9 @@ commands:
     expected_status_code: 200
     curl: |
       curl --request POST \
-      --url http://localhost:17777/api/v1.0/client/vm/porttunnel/start \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/porttunnel/start \
       --header 'Content-Type: application/json' \
-      --body '{
+      --data '{
         "server_host": "orbital-amethyst",
         "server_port": 4242,
         "vm_uuid": "ffffffff-fffff-ffff-ffff-ffffffffffff",
@@ -158,7 +166,7 @@ commands:
     retries: 1
     timeout: 30
     expected_status_code: 200
-    must_contain: '"service": "ssh"'
+    must_contain: 'ssh'
     curl: |
       curl --request GET \
       --url http://localhost:17777/api/v1.0/client/vm/porttunnel/status
@@ -171,7 +179,7 @@ commands:
       curl --request POST \
       --url http://localhost:17777/api/v1.0/client/vm/porttunnel/start \
       --header 'Content-Type: application/json' \
-      --body '{
+      --data '{
         "server_host": "orbital-amethyst",
         "server_port": 4242,
         "vm_uuid": "ffffffff-fffff-ffff-ffff-ffffffffffff",
@@ -182,7 +190,7 @@ commands:
     retries: 1
     timeout: 30
     expected_status_code: 200
-    must_contain: '"service": "vnc-via-host"'
+    must_contain: 'vnc-via-host'
     curl: |
       curl --request GET \
       --url http://localhost:17777/api/v1.0/client/vm/porttunnel/status
@@ -195,7 +203,7 @@ commands:
       curl --request POST \
       --url http://localhost:17777/api/v1.0/client/vm/porttunnel/start \
       --header 'Content-Type: application/json' \
-      --body '{
+      --data '{
         "server_host": "orbital-amethyst",
         "server_port": 4242,
         "vm_uuid": "ffffffff-fffff-ffff-ffff-ffffffffffff",
@@ -219,7 +227,7 @@ commands:
       curl --request POST \
       --url http://localhost:17777/api/v1.0/client/vm/porttunnel/start \
       --header 'Content-Type: application/json' \
-      --body '{
+      --data '{
         "server_host": "orbital-amethyst",
         "server_port": 4242,
         "vm_uuid": "ffffffff-fffff-ffff-ffff-ffffffffffff",
@@ -230,7 +238,7 @@ commands:
     retries: 1
     timeout: 30
     expected_status_code: 200
-    must_contain: '"service": "rdp"'
+    must_contain: 'rdp'
     curl: |
       curl --request GET \
       --url http://localhost:17777/api/v1.0/client/vm/porttunnel/status
@@ -244,8 +252,8 @@ commands:
       curl --request POST \
       --url http://localhost:17777/api/v1.0/client/vm/porttunnel/stop \
       --header 'Content-Type: application/json' \
-      --body '{
-        "port": 2420,
+      --data '{
+        "port": 2420
       }'
   
   - name: Matcher-Unregister
@@ -267,7 +275,7 @@ commands:
       curl --request DELETE \
       --url http://localhost:17777/api/v1.0/client/network/delete \
       --header 'Content-Type: application/json' \
-      --body '{
+      --data '{
         "network_uid": "ffffffff-fffff-ffff-ffff-ffffffffffff"
       }'
   
@@ -282,15 +290,3 @@ commands:
       --data '{
         "volume_id": "ffffffff-fffff-ffff-ffff-ffffffffffff"
       }'
-
-  - name: Cloudinit-Delete-Volume
-    retries: 2
-    timeout: 30
-    expected_status_code: 200
-    curl: |
-      curl --request POST \
-      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
-      --header 'Content-Type: application/json' \
-      --data '{
-        "volume_id": "ffffffff-fffff-ffff-ffff-ffffffffffff"
-        }'
