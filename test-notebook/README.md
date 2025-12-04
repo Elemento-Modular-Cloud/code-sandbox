@@ -16,6 +16,20 @@ python3 generate_tests_notebook.py --config testflows/testflow_daemons.yaml
 python3 generate_tests_notebook.py --config testflows/testflow_atomos.yaml --output notebooks/test_notebook_atomos.ipynb --default-addr your.ip.v4.addr
 ```
 
+The `--default-addr` flag sets the value that will replace all `{{IP}}` placeholders found in YAML files (if present). For example:
+```yaml
+- name: Storage-Info
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request POST \
+      --url http://{{IP}}:7772/api/v1.0/info \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffffffffffffffffffffffffffff"
+      }'
+``` 
+
 ## YAML file config
 
 ```yaml
@@ -34,7 +48,7 @@ The curl should have this kind of structure, especially in the payload:
 ```yaml
 curl: |
   curl --request GET \
-  --url http://192.168.3.7:7777/api/v1.0/canallocate \
+  --url http://{{IP}}:7777/api/v1.0/canallocate \
   --header 'Content-Type: application/json' \
   --data '{
       "py/object": "common.lib.system.systemrequirements.systemrequirements",
