@@ -1,0 +1,227 @@
+commands:
+  # ----------------------------------------- Networking Tests -----------------------------------------
+  - name: Networking-Ping
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    expected_value: This is an Elemento Network Client!
+    must_contain: Elemento
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:37777/
+
+  - markdown: |
+      ### Insert your target AtomOS into the "servers" field below to create a test network.
+
+  - name: Network-Create-Libvirt-Simple
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "servers": ["https://your-ip:7776"],
+        "network_name": "test-libvirt-simple",
+        "type": "libvirt",
+        "mode": null,
+        "private": true,
+        "ip": {
+          "address": "192.168.10.1/24",
+          "dhcp": {
+            "start": "192.168.10.10",
+            "end": "192.168.10.20",
+            "hosts": []
+          }
+        },
+        "routes": []
+      }'
+
+  - name: Network-Create-Libvirt-With-Hosts
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "servers": ["https://your-ip:7776"],
+        "network_name": "test-libvirt-with-hosts",
+        "type": "libvirt",
+        "mode": null,
+        "private": true,
+        "ip": {
+          "address": "192.168.10.1/24",
+          "dhcp": {
+            "start": "192.168.10.10",
+            "end": "192.168.10.20",
+            "hosts": [
+              {
+                "mac": "00:16:3e:77:e2:ed",
+                "name": "vm1.elemento.cloud",
+                "address": "192.168.10.21"
+              }
+            ]
+          }
+        },
+        "routes": []
+      }'
+
+  - name: Network-Create-Libvirt-With-Routes
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "servers": ["https://your-ip:7776"],
+        "network_name": "test-libvirt-with-routes",
+        "type": "libvirt",
+        "mode": null,
+        "private": true,
+        "ip": {
+          "address": "192.168.10.1/24",
+          "dhcp": {
+            "start": "192.168.10.10",
+            "end": "192.168.10.20",
+            "hosts": []
+          }
+        },
+        "routes": [
+          {
+            "address": "172.16.24.0",
+            "prefix": 24,
+            "gateway": "192.168.10.2"
+          }
+        ]
+      }'
+
+  - name: Network-Create-Tailscale
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "servers": ["http://192.168.3.7:7776"],
+        "network_name": "test-tailscale-network",
+        "type": "tailscale",
+        "mode": null,
+        "private": true,
+        "ip": {
+          "address": "10.8.0.0/16",
+          "net_bits": 4
+        },
+        "headscale": {
+          "address": "hs2.elemento.cloud",
+          "headscale_user": "elemento",
+          "api_key": "zvY0JSP.0AAUJXBViTEvV0ZTIRQUcWQFnXE15K-G"
+        }
+      }
+
+  - markdown:  |
+      ### Verify the networks created above are listed below and contain the correct parameters.
+
+  - name: Network-List
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/list
+  
+  - markdown:  |
+      ### Get detailed info for one of the created networks using its network_uid.
+
+  - name: Network-Get-Info
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/info
+      --header 'Content-Type: application/json' \
+      --data '{
+        "network_uid": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - markdown:  |
+      ### For Libvirt network ensure that the libvirt network exists with the given specs on the target AtomOS.
+  - markdown:  |
+      ### For the Tailscale network ensure that an active service exists on /etc/systemd/system called elemento-br-XXXXXXX.service,
+            a container with the same name must exists.
+
+  - name: Network-Create-Libvirt-Missing-Ip
+    retries: 1
+    timeout: 30
+    expected_status_code: 400
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "servers": ["https://your-ip:7776"],
+        "network_name": "test-libvirt-missing-ip",
+        "type": "libvirt",
+        "mode": null,
+        "private": true,
+        "ip": {
+          "address": null,
+          "dhcp": {
+            "start": "192.168.10.10",
+            "end": "192.168.10.20",
+            "hosts": []
+          }
+        },
+        "routes": []
+      }'
+
+  - name: Network-Create-Libvirt-Invalid-Dhcp
+    retries: 1
+    timeout: 30
+    expected_status_code: 400
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "servers": ["https://your-ip:7776"],
+        "network_name": "test-libvirt-invalid-dhcp",
+        "type": "libvirt",
+        "mode": null,
+        "private": true,
+        "ip": {
+          "address": "192.168.10.1/24",
+          "dhcp": {
+            "start": "192.168.30.10",
+            "end": "192.168.30.20",
+            "hosts": []
+          }
+        },
+        "routes": []
+      }'
+
+  - markdown:  |
+      ### Ensure that after reboot the networks created above persist and are active on the target AtomOS.
+
+  # ----------------------------------------- Cleanup -----------------------------------------
+  - name: Network-Delete-All
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request DELETE \
+      --url http://127.0.0.1:37777/api/v1.0/client/network/delete
+      --header 'Content-Type: application/json' \
+      --data '{
+        "network_uid": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - markdown:  |
+      ### Ensure that all networks created above have been deleted from the target AtomOS.
