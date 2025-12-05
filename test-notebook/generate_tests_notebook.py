@@ -88,8 +88,12 @@ class NotebookGenerator:
                 raise ConfigValidationError(f"Command {i} must be a dictionary")
 
             ##* Validate required fields
-            required_fields = ["name", "curl"]
-            for field in required_fields:
+            md_content = cmd.get("markdown")
+            if md_content is not None:
+                continue
+
+            required_fields_test = ["name", "curl"]
+            for field in required_fields_test:
                 if field not in cmd:
                     raise ConfigValidationError(f"Command {i} missing required field: {field}")
 
@@ -289,11 +293,14 @@ run(
         cells.append(self._create_common_cell())
 
         for i, cmd in enumerate(self.config["commands"]):
-            test_header = new_markdown_cell(f"### Test {i+1}: {cmd['name']}")
-            cells.append(test_header)
+            if cmd.get("markdown") is not None:  ##? Markdown cell
+                cells.append(new_markdown_cell(cmd.get("markdown")))
+            else:  ##? Test cell
+                test_header = new_markdown_cell(f"### Test {i+1}: {cmd['name']}")
+                cells.append(test_header)
 
-            ##* Add test cell
-            cells.append(self._create_test_cell(cmd))
+                ##* Add test cell
+                cells.append(self._create_test_cell(cmd))
 
         nb["cells"] = cells
 

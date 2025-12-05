@@ -32,6 +32,12 @@ The `--default-addr` flag sets the value that will replace all `{{IP}}` placehol
 
 ## YAML file config
 
+#### For markdown cells:
+```yaml
+- markdown: "your md here"
+```
+
+#### For test cells:
 ```yaml
 - name: name-of-test
   retries: 2 # number of request retries
