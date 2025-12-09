@@ -1,0 +1,165 @@
+commands:
+  ## STORAGE ##
+  - name: Storage-Ping
+    retries: 2
+    timeout: 5
+    expected_value: This is an Elemento Storage Client!
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/
+
+  - name: Storage-Accessible
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible
+
+  - name: Create Cloudimage
+    retries: 2
+    timeout: 10
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "ubuntu-cloudimage",
+        "private": false,
+        "clonable": true,
+        "alg": "cp",
+        "format": "qcow2",
+        "bus": "virtio",
+        "size": 10,
+        "url":"https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img",
+        "benchmark": {
+          "read_MB_bw": 0,
+          "write_MB_bw": 0,
+          "read_iops": 0,
+          "write_iops": 0
+        },
+        "hw_device": null,
+        "fs": null,
+        "kind": null,
+        "priority": 0
+      }'
+
+  - name: Cloudimage GET Info
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible \
+      --header 'Content-Type: application/json'
+
+  - name: Cloudimage create metadata user-data
+    retries: 2
+    timeout: 10
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/xxxxxxxxxxxxxxxxxxxxxx \
+        --header 'Content-Type: multipart/form-data' \
+        --form file=@utils/user-data
+
+  - name: Cloudimage create metadata meta-data
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/xxxxxxxxxxxxxxxxxxxx \
+        --header 'Content-Type: multipart/form-data' \
+        --form file=@utils/meta-data
+
+  ## MATCHER ##
+  - name: Matcher-Ping
+    retries: 2
+    timeout: 5
+    expected_value: This is an Elemento Matcher Client!
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/
+
+  - name: Matcher-Register AUTOSTART FLAG - insert vid
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "info": {
+          "vm_name": "VM",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "min_frequency": 0.5,
+        "reqECC": false,
+        "misc": {
+          "os_family": "linux",
+          "os_flavour": "ubuntu",
+          "qemu_agent": false,
+          "firmware": "bios"
+        },
+        "pci": [],
+        "volumes":[
+            {"vid": "xxxxxxxxxxxxxxxxxxxxx"},
+            {"vid": "xxxxxxxxxxxxxxxxxxxxx"}
+        ],
+        "has_network": true,
+        "networks": [
+            {
+                "network_uid": "virbr0"
+            }
+        ],
+        "vm_tags": ["tag1","tag2","tag3"]
+      }'
+
+  - name: Matcher-Get VM Info
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status \
+      --header 'Content-Type: application/json'
+
+  ## CLEANUP ##
+
+  - name: Matcher-Unregister - insert id
+    retries: 2
+    timeout: 10
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --header 'User-Agent: insomnia/10.0.0' \
+      --data '{
+      "local_index": "xxxxxxxxxxxxxxxxxxxxx"
+      }'
+
+  - name: Destroy Cloudimage - insert vid [1]
+    retries: 2
+    timeout: 10
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --header 'User-Agent: insomnia/10.0.0' \
+      --data '{
+      "volume_id": "bf41586b3851417fb11488cf1ac7f4b7"
+      }'
+
+  - name: Destroy Metadata - insert vid [1]
+    retries: 2
+    timeout: 10
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --header 'User-Agent: insomnia/10.0.0' \
+      --data '{
+      "volume_id": "bf41586b3851417fb11488cf1ac7f4b7"
+      }'
