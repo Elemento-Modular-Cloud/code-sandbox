@@ -53,15 +53,15 @@ commands:
         "mode": null,
         "private": true,
         "ip": {
-          "address": "192.168.10.1/24",
+          "address": "192.168.100.1/24",
           "dhcp": {
-            "start": "192.168.10.10",
-            "end": "192.168.10.20",
+            "start": "192.168.100.10",
+            "end": "192.168.100.20",
             "hosts": [
               {
                 "mac": "00:16:3e:77:e2:ed",
                 "name": "vm1.elemento.cloud",
-                "address": "192.168.10.21"
+                "address": "192.168.100.21"
               }
             ]
           }
@@ -84,10 +84,10 @@ commands:
         "mode": null,
         "private": true,
         "ip": {
-          "address": "192.168.10.1/24",
+          "address": "192.168.101.1/24",
           "dhcp": {
-            "start": "192.168.10.10",
-            "end": "192.168.10.20",
+            "start": "192.168.101.10",
+            "end": "192.168.101.20",
             "hosts": []
           }
         },
@@ -95,7 +95,7 @@ commands:
           {
             "address": "172.16.24.0",
             "prefix": 24,
-            "gateway": "192.168.10.2"
+            "gateway": "192.168.101.2"
           }
         ]
       }'
@@ -109,7 +109,7 @@ commands:
       --url http://127.0.0.1:37777/api/v1.0/client/network/create \
       --header 'Content-Type: application/json' \
       --data '{
-        "servers": ["http://192.168.3.7:7776"],
+        "servers": ["http://your-ip:7776"],
         "network_name": "test-tailscale-network",
         "type": "tailscale",
         "mode": null,
@@ -145,7 +145,7 @@ commands:
     expected_status_code: 200
     curl: |
       curl --request POST \
-      --url http://127.0.0.1:37777/api/v1.0/client/network/info
+      --url http://127.0.0.1:37777/api/v1.0/client/network/info \
       --header 'Content-Type: application/json' \
       --data '{
         "network_uid": "ffffffff-fffff-ffff-ffff-ffffffffffff"
@@ -197,7 +197,7 @@ commands:
         "mode": null,
         "private": true,
         "ip": {
-          "address": "192.168.10.1/24",
+          "address": "192.168.102.1/24",
           "dhcp": {
             "start": "192.168.30.10",
             "end": "192.168.30.20",
@@ -217,7 +217,7 @@ commands:
     expected_status_code: 200
     curl: |
       curl --request DELETE \
-      --url http://127.0.0.1:37777/api/v1.0/client/network/delete
+      --url http://127.0.0.1:37777/api/v1.0/client/network/delete \
       --header 'Content-Type: application/json' \
       --data '{
         "network_uid": "ffffffff-fffff-ffff-ffff-ffffffffffff"
