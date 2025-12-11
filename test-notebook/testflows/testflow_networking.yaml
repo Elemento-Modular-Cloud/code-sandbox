@@ -121,9 +121,9 @@ commands:
         "headscale": {
           "address": "hs2.elemento.cloud",
           "headscale_user": "elemento",
-          "api_key": "zvY0JSP.0AAUJXBViTEvV0ZTIRQUcWQFnXE15K-G"
+          "api_key": "your-api-key"
         }
-      }
+      }'
 
   - markdown:  |
       ### Verify the networks created above are listed below and contain the correct parameters.
