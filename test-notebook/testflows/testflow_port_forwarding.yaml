@@ -1,0 +1,161 @@
+commands:
+  ## STORAGE ##
+  - name: Storage-Ping
+    retries: 2
+    timeout: 5
+    expected_value: This is an Elemento Storage Client!
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/
+
+  - name: Storage-Accessible
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible
+
+  - name: Create Cloudimage - insert creatorID
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "ubuntu-cloudimage",
+        "private": false,
+        "clonable": true,
+        "alg": "cp",
+        "format": "qcow2",
+        "bus": "virtio",
+        "size": 10,
+        "url":"https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img",
+        "benchmark": {
+          "read_MB_bw": 0,
+          "write_MB_bw": 0,
+          "read_iops": 0,
+          "write_iops": 0
+        },
+        "hw_device": null,
+        "fs": null,
+        "kind": null,
+        "priority": 0
+      }'
+
+  - name: Cloudimage GET Info
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible \
+      --header 'Content-Type: application/json'
+
+  - name: Cloudimage create metadata user-data
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/xxxxxxxxxxxxxxxxxxxxxx \
+        --header 'Content-Type: multipart/form-data' \
+        --form file=@/utils/user-data
+
+  - name: Cloudimage create metadata meta-data
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:27777/api/v1.0/client/volume/cloudinit/metadata/xxxxxxxxxxxxxxxxxxxx \
+        --header 'Content-Type: multipart/form-data' \
+        --form file=@/utils/meta-data
+
+  ## MATCHER ##
+  - name: Matcher-Ping
+    retries: 2
+    timeout: 5
+    expected_value: This is an Elemento Matcher Client!
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/
+
+  - name: Matcher-Register - insert vid
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "vm_name": "VM",
+        "slots": 2,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu"},
+        "pci": [
+        ],
+        "volumes":[
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff"},
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff"}
+
+        ],
+        "has_network": true,
+        "networks": [
+            {
+                "network_uid": "virbr0"
+            }
+        ]
+      }'
+
+  ## PORT FORWARDING ##
+
+  - name: Get Portforwarding before PF
+    retries: 2
+    timeout: 5
+    expected_value: []
+    curl: |
+      curl --request GET \
+        --url http://127.0.0.1:37777/api/v1.0/client/network/portforwards \
+        --header 'User-Agent: insomnia/11.2.0'
+
+  - name: Create Portforwarding - edit target_vm_uid, serverurl, port, target_port
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:37777/api/v1.0/client/network/portforward \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "serverurl": "http://192.168.3.7:7776",
+        "protocol": "tcp",
+        "port": 1027,
+        "target": "10.8.32.39",
+        "target_vm_uid": "fffffffffffffffffffffffffff",
+        "target_port": 8000,
+        "tailscale": true,
+        "force": false
+      }'
+
+  - name: Get Portforwarding after PF
+    retries: 2
+    timeout: 5
+    expected_value: []
+    curl: |
+      curl --request GET \
+        --url http://127.0.0.1:37777/api/v1.0/client/network/portforwards \
+        --header 'User-Agent: insomnia/11.2.0'
+
+  - name: Delete Portforwarding - edit PF uuid
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request DELETE \
+        --url http://127.0.0.1:37777/api/v1.0/client/network/portforward \
+        --header 'Content-Type: application/json' \
+        --header 'User-Agent: insomnia/11.6.1' \
+        --data '{
+        "forward_uid": "ffffffffffffffffffffffffffffffff"
+      }'
