@@ -109,7 +109,7 @@ commands:
       --url http://127.0.0.1:37777/api/v1.0/client/network/create \
       --header 'Content-Type: application/json' \
       --data '{
-        "servers": ["http://your-ip:7776"],
+        "servers": ["https://your-ip:7776"],
         "network_name": "test-tailscale-network",
         "type": "tailscale",
         "mode": null,
