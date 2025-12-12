@@ -100,6 +100,9 @@ commands:
         ]
       }'
 
+  - markdown:  |
+      ### Create a Tailscale network on the target AtomOS, ask for "api_key" to Giorgio Torchio gtorchio@elemento.cloud.
+
   - name: Network-Create-Tailscale
     retries: 1
     timeout: 30
@@ -185,7 +188,7 @@ commands:
   - name: Network-Create-Libvirt-Invalid-Dhcp
     retries: 1
     timeout: 30
-    expected_status_code: 400
+    expected_status_code: 502
     curl: |
       curl --request POST \
       --url http://127.0.0.1:37777/api/v1.0/client/network/create \
