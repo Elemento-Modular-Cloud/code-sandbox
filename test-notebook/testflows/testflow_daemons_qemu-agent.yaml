@@ -1,0 +1,250 @@
+commands:
+  - name: Storage-Create
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "size": 32,
+        "name": "vol-test",
+        "bootable": false,
+        "readonly": false,
+        "shareable": false,
+        "private": false,
+        "clonable": true,
+        "bus": "virtio",
+        "alg": "rsync",
+        "format": "raw"
+      }'
+
+  - name: Create-VM
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://localhost:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-test",
+          "autostart": false
+        },
+        "slots": 4,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 4096,
+        "reqECC": true,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu", "qemu_agent": true, "firmware": "bios"},
+        "pci": [],
+        "volumes":[
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0}
+        ],
+        "has_network": true,
+        "networks": [
+            {
+                "network_uid": "virbr0"
+            }
+        ],
+        "vm_tags": ["tag2"]
+      }'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
+
+  - markdown: "### Installation of Qemu Agent in Guest OS"
+
+  - name: Matcher-Agent-Attach
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/attach \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffffff"
+      }'
+
+  - name: Reboot-VM
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/reboot \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uid": "fffffffffffffffffffffffffff",
+        "force": false
+      }'
+
+  - name: Matcher-Agent-Command
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/info \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-Body
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff",
+        "command": "info"
+      }'
+
+  - name: Matcher-Agent-Command-Ping
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/ping \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-Reboot
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/reboot \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-Hostname
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/hostname \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-Time
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/time \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-Set-Time
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/set_time \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-IP
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/ip \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-FSinfo
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/fs_info \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-FSfreeze
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/fs_freeze \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-FSthaw
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/fs_thaw \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Agent-Command-Shutdown
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+        --url http://127.0.0.1:17777/api/v1.0/client/vm/agent/run/shutdown \
+        --header 'Agent: qemu-agent' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "vm_uuid": "ffffffffffffffffffffffffffff"
+      }'
+
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
