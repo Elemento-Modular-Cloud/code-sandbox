@@ -1,0 +1,161 @@
+commands:
+  - name: Storage-Create
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "size": 8,
+        "name": "vol-1",
+        "bootable": false,
+        "readonly": false,
+        "shareable": false,
+        "private": false,
+        "clonable": true,
+        "bus": "virtio",
+        "alg": "rsync",
+        "format": "raw"
+      }'
+
+  - name: Storage-Accessible
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible
+
+  - markdown: |
+      ---
+
+      ### GPU specs:
+
+      ...
+
+      ---
+
+  - name: Matcher-Register-PCI-ECC
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "info": {
+            "vm_name": "vm-adv",
+            "autostart": false
+          },
+          "slots": 4,
+          "min_frequency": 2,
+          "overprovision": 10,
+          "allowSMT": false,
+          "archs": ["X86_64"],
+          "flags": ["sse2"],
+          "ramsize": 16384,
+          "reqECC": false,
+          "misc": {
+            "os_family": "linux",
+            "os_flavour": "almalinux",
+            "qemu_agent": false
+          },
+          "pci": [
+            {
+              "vendor": "10de",
+              "model": "1401",
+              "quantity": 1
+            },
+            {
+              "vendor": "10de",
+              "model": "0fba",
+              "quantity": 1
+            }
+          ],
+          "volumes":[
+            {"vid": "ffffffffffffffffffffffffffffffffff", "priority": 0}
+          ],
+          "has_network": false,
+          "networks": []
+        }'
+
+  - name: Matcher-Register-SMT
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-smt",
+          "autostart": false
+        },
+        "slots": 2,
+        "overprovision": 4,
+        "allowSMT": true,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 2048,
+        "reqECC": false,
+        "misc": {"os_family": "linux", "os_flavour": "almalinux", "qemu_agent": false, "firmware": "bios"},
+        "pci": [],
+        "volumes":[],
+        "has_network": true,
+        "networks": [
+            {
+                "network_uid": "virbr0"
+            }
+        ],
+        "vm_tags": []
+      }'
+
+  - name: Host-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://{{IP}}:7777/api/v1.0/host/status \
+      --header 'Authorization: Bearer <your-token>'
+
+  - name: Matcher-Status
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/status
+
+  - name: Matcher-Unregister
+    retries: 2
+    timeout: 30
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/unregister \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "local_index": "ffffffff-fffff-ffff-ffff-ffffffffffff"
+      }'
+
+  - name: Storage-Destroy
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/destroy \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "volume_id": "ffffffffffffffffffffffffffffffffff"
+      }'
+
+  - name: Storage-Accessible
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible

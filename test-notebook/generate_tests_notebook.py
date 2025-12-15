@@ -281,8 +281,8 @@ run(
         header = f"""\
 # API Test Suite
 
-- Generated from configuration: _{self.config_path.name}_
-- Total tests: {len(self.config['commands'])}
+Generated from configuration: _{self.config_path.name}_
+
 ---
 """
         cells.append(new_markdown_cell(header))
@@ -292,11 +292,13 @@ run(
         cells.append(common_header)
         cells.append(self._create_common_cell())
 
+        test_index = 0
         for i, cmd in enumerate(self.config["commands"]):
             if cmd.get("markdown") is not None:  ##? Markdown cell
                 cells.append(new_markdown_cell(cmd.get("markdown")))
             else:  ##? Test cell
-                test_header = new_markdown_cell(f"### Test {i+1}: {cmd['name']}")
+                test_index += 1
+                test_header = new_markdown_cell(f"### Step {test_index}: {cmd['name']}")
                 cells.append(test_header)
 
                 ##* Add test cell

@@ -1,0 +1,102 @@
+commands:
+  - markdown: |
+      ---
+
+      ### Setup of volumes 
+
+      Conversion of an existing Elemento volume via:
+      ```bash
+      qemu-img convert -f raw -O vmdk data.img disk.vmdk
+      ```
+
+      Then using `disk.vmdk` as path passed to import to enable overlay. The `data.img` contains a ready-to-go installation.
+
+      If not present prepare it via next step, otherwise skip the storage creation (_remember to use a `qcow2` or `raw` format_).
+
+      ---
+
+  - name: Storage-Create
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/create \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "size": 32,
+        "name": "vol-test",
+        "bootable": false,
+        "readonly": false,
+        "shareable": false,
+        "private": false,
+        "clonable": true,
+        "bus": "virtio",
+        "alg": "rsync",
+        "format": "qcow2"
+      }'
+
+  - name: Import-Overlay
+    retries: 2
+    timeout: 5
+    curl: |
+      curl --request POST \
+        --url http://{{IP}}:7772/api/v1.0/import \
+        --header 'Authorization: Bearer <your-token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+        "creatorID": "ffffffffffffffffffffffffffffffff",
+        "name": "test-create",
+        "private": false,
+        "readonly": false,
+        "shareable": false,
+        "bootable": false,
+        "clonable": false,
+        "alg": "no",
+        "format": "qcow2",
+        "bus": "virtio",
+        "overlay": false,
+        "path": "/home/test/volume.qcow2"
+      }'
+
+  - name: Storage-Accessible
+    retries: 2
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request GET \
+      --url http://127.0.0.1:27777/api/v1.0/client/volume/accessible
+
+  - name: Matcher-Register
+    retries: 1
+    timeout: 30
+    expected_status_code: 200
+    curl: |
+      curl --request POST \
+      --url http://127.0.0.1:17777/api/v1.0/client/vm/register \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "info": {
+          "vm_name": "vm-test",
+          "autostart": false
+        },
+        "slots": 4,
+        "overprovision": 2,
+        "allowSMT": false,
+        "archs": ["X86_64"],
+        "flags": ["sse2"],
+        "ramsize": 4096,
+        "reqECC": true,
+        "misc": {"os_family": "linux", "os_flavour": "ubuntu", "qemu_agent": false, "firmware": "bios"},
+        "pci": [],
+        "volumes":[
+            {"vid": "ffffffff-fffff-ffff-ffff-ffffffffffff", "priority": 0}
+        ],
+        "has_network": true,
+        "networks": [
+            {
+                "network_uid": "virbr0"
+            }
+        ],
+        "vm_tags": ["tag2"]
+      }'
