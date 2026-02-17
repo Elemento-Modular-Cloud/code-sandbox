@@ -1,0 +1,205 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electros Bug Report</title>
+  <meta name="description" content="">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+
+  <style>
+    .entry {
+      display: flex;
+      flex-flow: column nowrap;
+      font-size: .8rem;
+    }
+
+    .entry > span {
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body data-sidebar-layout data-theme="dark">
+  <nav data-topnav>
+    <button data-sidebar-toggle aria-label="Toggle menu" class="outline">☰</button>
+    <span>Electros Bug Report Viewer</span>
+  </nav>
+
+  <aside data-sidebar>
+    <nav>
+      <ul id="navbar">
+        <li><a href="#" data-page="import" aria-current="page">Import File</a></li>
+        <li><a href="#" data-page="general">General</a></li>
+        <li><a href="#" data-page="console">Console</a></li>
+        <li><a href="#" data-page="network">Network Requests</a></li>
+<!--        <li>-->
+<!--          <details open>-->
+<!--            <summary>Settings</summary>-->
+<!--            <ul>-->
+<!--              <li><a href="#">General</a></li>-->
+<!--              <li><a href="#">Security</a></li>-->
+<!--              <li><a href="#">Billing</a></li>-->
+<!--            </ul>-->
+<!--          </details>-->
+<!--        </li>-->
+      </ul>
+    </nav>
+    <footer>
+    </footer>
+  </aside>
+  <main>
+    <div style="padding: var(--space-3)" data-page="import">
+      <h2>Import Report</h2>
+      <input type="file" accept=".electrosBugReport .json.gzip" id="bugReportImport">
+
+
+    </div>
+
+    <div style="padding: var(--space-3); display: none;" data-page="general">
+      <h2>General</h2>
+
+      <details>
+        <summary>App Version</summary>
+
+        <p class="entry">
+          Platform
+          <span id="platform"></span>
+        </p>
+
+        <p class="entry">
+          Version
+          <span style="font-family: monospace;" id="version"></span>
+        </p>
+      </details>
+      <details>
+        <summary>Route</summary>
+
+      </details>
+    </div>
+
+    <div style="padding: var(--space-3); display: none;" data-page="console">
+      <h2>Console</h2>
+
+      <table id="consoleTable">
+        <thead>
+        <tr>
+          <th>Level</th>
+          <th>Timestamp</th>
+          <th>Content</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div style="padding: var(--space-3); display: none;" data-page="network">
+      <h2>Network Requests</h2>
+
+      <table id="requestsTable">
+        <thead>
+        <tr>
+          <th style="width: 100%;">URL</th>
+          <th style="width: 8rem;">Method</th>
+          <th style="width: 8rem;">Status</th>
+          <th style="width: 16rem;">Sent at</th>
+          <th style="width: 16rem;">Responded at</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+
+  <dialog id="networkRequest" closedby="any" style="max-height: 80vh; max-width: 80vw;">
+    <form method="dialog">
+      <header>
+        <h3>Network Request</h3>
+      </header>
+      <div>
+        <p class="entry">
+          URL
+          <span id="dialogUrl"></span>
+        </p>
+
+        <div style="display: flex; flex-flow: row nowrap; column-gap: 2rem;">
+          <p class="entry">
+            Status
+            <span id="dialogStatus"></span>
+          </p>
+
+          <p class="entry">
+            Method
+            <span id="dialogMethod"></span>
+          </p>
+
+          <p class="entry">
+            Sent at
+            <span id="dialogStart"></span>
+          </p>
+
+          <p class="entry">
+            Responded at
+            <span id="dialogEnd"></span>
+          </p>
+
+          <p class="entry">
+            Duration
+            <span id="dialogDuration"></span>
+          </p>
+        </div>
+
+        <details>
+          <summary>Request Headers</summary>
+          <div style="overflow-y: scroll; overflow-x: auto; max-height: 16rem;">
+            <table id="requestHeadersTable">
+              <thead><tr><th>Header</th><th>Value</th></tr></thead><tbody></tbody>
+            </table>
+          </div>
+        </details>
+
+        <details>
+          <summary>Response Headers</summary>
+          <div style="overflow-y: scroll; overflow-x: auto; max-height: 16rem;">
+            <table id="responseHeadersTable">
+              <thead><tr><th>Header</th><th>Value</th></tr></thead><tbody></tbody>
+            </table>
+          </div>
+        </details>
+
+        <details>
+          <summary>Request Body</summary>
+          <div style="overflow-y: scroll; overflow-x: auto; max-height: 16rem;">
+            <span id="dialogReqBody" style="font-family: monospace; white-space: pre;"></span>
+          </div>
+        </details>
+
+        <details>
+          <summary>Response Body</summary>
+          <div style="overflow-y: scroll; overflow-x: auto; max-height: 16rem;">
+            <span id="dialogResBody" style="font-family: monospace; white-space: pre;"></span>
+          </div>
+        </details>
+
+      </div>
+      <footer>
+        <button value="confirm">Close</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
