@@ -1,0 +1,93 @@
+{
+  "durationMs": 67127,
+  "totalRequests": 150,
+  "successCount": 142,
+  "errorCount": 8,
+  "requestsPerSecond": 2.234570292132823,
+  "overallLatency": {
+    "avg": 1197,
+    "p50": 661,
+    "p95": 4290,
+    "p99": 10287,
+    "min": 148,
+    "max": 10348
+  },
+  "byScenario": {
+    "GET [upcloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [upcloud] /api/v1.0/objectstorage/running",
+      "count": 39,
+      "success": 39,
+      "errors": 0,
+      "avgLatencyMs": 536,
+      "p50Ms": 542,
+      "p95Ms": 765,
+      "p99Ms": 910,
+      "minMs": 321,
+      "maxMs": 910
+    },
+    "GET [impossiblecloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [impossiblecloud] /api/v1.0/objectstorage/running",
+      "count": 29,
+      "success": 29,
+      "errors": 0,
+      "avgLatencyMs": 850,
+      "p50Ms": 748,
+      "p95Ms": 1457,
+      "p99Ms": 1667,
+      "minMs": 376,
+      "maxMs": 1667
+    },
+    "GET [azure] /api/v1.0/objectstorage/running": {
+      "name": "GET [azure] /api/v1.0/objectstorage/running",
+      "count": 27,
+      "success": 27,
+      "errors": 0,
+      "avgLatencyMs": 623,
+      "p50Ms": 389,
+      "p95Ms": 2174,
+      "p99Ms": 2248,
+      "minMs": 265,
+      "maxMs": 2248
+    },
+    "GET [google] /api/v1.0/kaas/running": {
+      "name": "GET [google] /api/v1.0/kaas/running",
+      "count": 42,
+      "success": 42,
+      "errors": 0,
+      "avgLatencyMs": 986,
+      "p50Ms": 828,
+      "p95Ms": 1628,
+      "p99Ms": 2514,
+      "minMs": 616,
+      "maxMs": 2514
+    },
+    "POST [scaleway] /api/v1.0/kaas/create": {
+      "name": "POST [scaleway] /api/v1.0/kaas/create",
+      "count": 4,
+      "success": 2,
+      "errors": 2,
+      "avgLatencyMs": 9380,
+      "p50Ms": 9750,
+      "p95Ms": 10348,
+      "p99Ms": 10348,
+      "minMs": 7325,
+      "maxMs": 10348
+    },
+    "GET [scaleway] /api/v1.0/kaas/running": {
+      "name": "GET [scaleway] /api/v1.0/kaas/running",
+      "count": 9,
+      "success": 3,
+      "errors": 6,
+      "avgLatencyMs": 4252,
+      "p50Ms": 3186,
+      "p95Ms": 10287,
+      "p99Ms": 10287,
+      "minMs": 148,
+      "maxMs": 10287
+    }
+  },
+  "errorSummary": {
+    "HTTP/2: \"headers timeout after 10000\"": 4,
+    "HTTP 503": 4
+  }
+}

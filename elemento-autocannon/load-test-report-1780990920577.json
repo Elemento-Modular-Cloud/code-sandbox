@@ -1,0 +1,69 @@
+{
+  "durationMs": 40770,
+  "totalRequests": 68,
+  "successCount": 62,
+  "errorCount": 6,
+  "requestsPerSecond": 1.6678930586215353,
+  "overallLatency": {
+    "avg": 1716,
+    "p50": 609,
+    "p95": 7899,
+    "p99": 10334,
+    "min": 204,
+    "max": 10334
+  },
+  "byScenario": {
+    "GET [azure] /api/v1.0/objectstorage/running": {
+      "name": "GET [azure] /api/v1.0/objectstorage/running",
+      "count": 15,
+      "success": 15,
+      "errors": 0,
+      "avgLatencyMs": 516,
+      "p50Ms": 359,
+      "p95Ms": 1535,
+      "p99Ms": 1535,
+      "minMs": 204,
+      "maxMs": 1535
+    },
+    "GET [impossiblecloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [impossiblecloud] /api/v1.0/objectstorage/running",
+      "count": 24,
+      "success": 24,
+      "errors": 0,
+      "avgLatencyMs": 1122,
+      "p50Ms": 863,
+      "p95Ms": 2285,
+      "p99Ms": 2517,
+      "minMs": 452,
+      "maxMs": 2517
+    },
+    "GET [scaleway] /api/v1.0/objectstorage/running": {
+      "name": "GET [scaleway] /api/v1.0/objectstorage/running",
+      "count": 14,
+      "success": 8,
+      "errors": 6,
+      "avgLatencyMs": 5302,
+      "p50Ms": 5415,
+      "p95Ms": 10334,
+      "p99Ms": 10334,
+      "minMs": 223,
+      "maxMs": 10334
+    },
+    "GET [upcloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [upcloud] /api/v1.0/objectstorage/running",
+      "count": 15,
+      "success": 15,
+      "errors": 0,
+      "avgLatencyMs": 519,
+      "p50Ms": 499,
+      "p95Ms": 757,
+      "p99Ms": 757,
+      "minMs": 351,
+      "maxMs": 757
+    }
+  },
+  "errorSummary": {
+    "HTTP/2: \"headers timeout after 10000\"": 2,
+    "HTTP 503": 4
+  }
+}

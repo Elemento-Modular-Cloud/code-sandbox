@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Load Test Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#10141c; --panel:#181e2a; --panel2:#1f2736; --line:#2b3548;
+  --ink:#e8ecf4; --muted:#8b96ab; --accent:#ffb454; --ok:#5dd39e; --err:#ff6b6b; --p95:#7aa2f7; --p99:#bb9af7;
+  --mono:"SF Mono",ui-monospace,Consolas,monospace; --sans:"Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:24px;min-height:100vh}
+h1{font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);font-family:var(--mono)}
+h1 span{color:var(--muted);font-weight:400}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+#drop{border:1.5px dashed var(--line);border-radius:10px;padding:28px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s;margin-bottom:20px}
+#drop:hover,#drop.over{border-color:var(--accent);color:var(--accent);background:rgba(255,180,84,.04)}
+#drop b{color:var(--ink)}
+.report{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:24px}
+.rhead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.rhead h2{font-size:15px;font-family:var(--mono);color:var(--ink)}
+.rhead button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px}
+.rhead button:hover{color:var(--err);border-color:var(--err)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.card{background:var(--panel2);border-radius:8px;padding:12px 14px}
+.card .v{font-family:var(--mono);font-size:20px;font-weight:600}
+.card .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.v.ok{color:var(--ok)}.v.err{color:var(--err)}.v.ac{color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.chartbox{background:var(--panel2);border-radius:8px;padding:14px;min-height:280px}
+.chartbox h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;margin-top:18px}
+th{text-align:right;color:var(--muted);font-weight:500;padding:8px;border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase}
+th:first-child,td:first-child{text-align:left}
+td{padding:8px;border-bottom:1px solid var(--line);text-align:right}
+tr:hover td{background:rgba(255,255,255,.02)}
+.errlist{margin-top:14px;background:rgba(255,107,107,.06);border:1px solid rgba(255,107,107,.25);border-radius:8px;padding:12px 16px;font-family:var(--mono);font-size:12.5px}
+.errlist div{display:flex;justify-content:space-between;padding:3px 0}
+.errlist .n{color:var(--err);font-weight:600}
+.badge{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:99px;margin-left:6px}
+.badge.ok{background:rgba(93,211,158,.15);color:var(--ok)}
+.badge.err{background:rgba(255,107,107,.15);color:var(--err)}
+#empty{color:var(--muted);text-align:center;padding:40px;font-size:14px}
+.canvaswrap{position:relative;height:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Load Test Viewer <span>// drop & inspect</span></h1>
+  <span style="color:var(--muted);font-size:12px;font-family:var(--mono)" id="count"></span>
+</header>
+
+<div id="drop">
+  <b>Trascina qui uno o più file JSON</b> oppure clicca per selezionarli<br>
+  <span style="font-size:12px">puoi anche incollare il JSON con Ctrl+V</span>
+  <input type="file" id="file" accept=".json,application/json" multiple hidden>
+</div>
+
+<div id="reports"></div>
+<div id="empty">Nessun report caricato.</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const reports=[];
+const fmtMs=v=>v>=10000?(v/1000).toFixed(1)+'s':v+'ms';
+const css=v=>getComputedStyle(document.body).getPropertyValue(v).trim();
+
+Chart.defaults.color=css('--muted');
+Chart.defaults.borderColor=css('--line');
+Chart.defaults.font.family=css('--mono');
+Chart.defaults.font.size=11;
+
+// --- input handling ---
+const drop=$('#drop'), fileInput=$('#file');
+drop.onclick=()=>fileInput.click();
+fileInput.onchange=e=>readFiles(e.target.files);
+['dragover','dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{
+  e.preventDefault();
+  drop.classList.toggle('over',ev==='dragover');
+  if(ev==='drop')readFiles(e.dataTransfer.files);
+}));
+document.addEventListener('paste',e=>{
+  const t=e.clipboardData.getData('text');
+  if(t.trim().startsWith('{'))try{addReport(JSON.parse(t),'incollato '+new Date().toLocaleTimeString())}catch(err){alert('JSON non valido: '+err.message)}
+});
+function readFiles(files){
+  [...files].forEach(f=>{
+    const r=new FileReader();
+    r.onload=()=>{try{addReport(JSON.parse(r.result),f.name)}catch(e){alert(f.name+': JSON non valido')}};
+    r.readAsText(f);
+  });
+  fileInput.value='';
+}
+
+// --- rendering ---
+function addReport(data,name){
+  if(!data.byScenario){alert(name+': formato non riconosciuto (manca byScenario)');return}
+  reports.push({data,name});
+  render();
+}
+function removeReport(i){reports.splice(i,1);render()}
+
+function render(){
+  $('#reports').innerHTML='';
+  $('#empty').style.display=reports.length?'none':'block';
+  $('#count').textContent=reports.length?reports.length+' report':'';
+  reports.forEach((r,i)=>renderReport(r,i));
+}
+
+function renderReport({data,name},idx){
+  const d=data, scen=Object.values(d.byScenario);
+  const errRate=d.totalRequests?(d.errorCount/d.totalRequests*100):0;
+  const el=document.createElement('div');
+  el.className='report';
+  el.innerHTML=`
+    <div class="rhead">
+      <h2>${esc(name)}
+        <span class="badge ${d.errorCount?'err':'ok'}">${d.errorCount?errRate.toFixed(1)+'% errori':'100% OK'}</span>
+      </h2>
+      <button onclick="removeReport(${idx})">✕ rimuovi</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="v">${(d.durationMs/1000).toFixed(1)}s</div><div class="l">Durata</div></div>
+      <div class="card"><div class="v">${d.totalRequests}</div><div class="l">Richieste</div></div>
+      <div class="card"><div class="v ok">${d.successCount}</div><div class="l">Successi</div></div>
+      <div class="card"><div class="v ${d.errorCount?'err':''}">${d.errorCount}</div><div class="l">Errori</div></div>
+      <div class="card"><div class="v ac">${d.requestsPerSecond.toFixed(2)}</div><div class="l">Req/sec</div></div>
+      <div class="card"><div class="v">${fmtMs(d.overallLatency.p50)}</div><div class="l">p50</div></div>
+      <div class="card"><div class="v">${fmtMs(d.overallLatency.p95)}</div><div class="l">p95</div></div>
+      <div class="card"><div class="v">${fmtMs(d.overallLatency.p99)}</div><div class="l">p99</div></div>
+    </div>
+    <div class="grid2">
+      <div class="chartbox"><h3>Latenza per scenario (ms)</h3><div class="canvaswrap"><canvas id="lat${idx}"></canvas></div></div>
+      <div class="chartbox"><h3>Successi / errori per scenario</h3><div class="canvaswrap"><canvas id="se${idx}"></canvas></div></div>
+    </div>
+    ${tableHtml(scen)}
+    ${errHtml(d.errorSummary)}
+  `;
+  $('#reports').appendChild(el);
+
+  const labels=scen.map(shortName);
+  new Chart($('#lat'+idx),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'avg',data:scen.map(s=>s.avgLatencyMs),backgroundColor:css('--accent')},
+      {label:'p50',data:scen.map(s=>s.p50Ms),backgroundColor:css('--ok')},
+      {label:'p95',data:scen.map(s=>s.p95Ms),backgroundColor:css('--p95')},
+      {label:'p99',data:scen.map(s=>s.p99Ms),backgroundColor:css('--p99')},
+    ]},
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{position:'bottom'}},scales:{x:{beginAtZero:true}}}
+  });
+  new Chart($('#se'+idx),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'success',data:scen.map(s=>s.success),backgroundColor:css('--ok')},
+      {label:'errori',data:scen.map(s=>s.errors),backgroundColor:css('--err')},
+    ]},
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{position:'bottom'}},
+      scales:{x:{stacked:true,beginAtZero:true},y:{stacked:true}}}
+  });
+}
+
+function tableHtml(scen){
+  return `<table><thead><tr>
+    <th>Scenario</th><th>Req</th><th>OK</th><th>Err</th><th>avg</th><th>p50</th><th>p95</th><th>p99</th><th>min</th><th>max</th>
+  </tr></thead><tbody>${scen.map(s=>`<tr>
+    <td>${esc(s.name)}</td><td>${s.count}</td>
+    <td style="color:var(--ok)">${s.success}</td>
+    <td style="color:${s.errors?'var(--err)':'var(--muted)'}">${s.errors}</td>
+    <td>${s.avgLatencyMs}</td><td>${s.p50Ms}</td><td>${s.p95Ms}</td><td>${s.p99Ms}</td><td>${s.minMs}</td><td>${s.maxMs}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+function errHtml(es){
+  if(!es||!Object.keys(es).length)return'';
+  return `<div class="errlist"><strong style="color:var(--err)">Errori</strong>${
+    Object.entries(es).map(([k,v])=>`<div><span>${esc(k)}</span><span class="n">×${v}</span></div>`).join('')
+  }</div>`;
+}
+function shortName(s){
+  const m=s.name.match(/\[([^\]]+)\]/);
+  return m?s.name.split(' ')[0]+' '+m[1]:s.name.slice(0,40);
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+</script>
+</body>
+</html>

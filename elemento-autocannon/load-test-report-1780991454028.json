@@ -1,0 +1,66 @@
+{
+  "durationMs": 65744,
+  "totalRequests": 260,
+  "successCount": 260,
+  "errorCount": 0,
+  "requestsPerSecond": 3.9547335118033584,
+  "overallLatency": {
+    "avg": 857,
+    "p50": 683,
+    "p95": 2290,
+    "p99": 2915,
+    "min": 177,
+    "max": 3310
+  },
+  "byScenario": {
+    "GET [impossiblecloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [impossiblecloud] /api/v1.0/objectstorage/running",
+      "count": 81,
+      "success": 81,
+      "errors": 0,
+      "avgLatencyMs": 947,
+      "p50Ms": 863,
+      "p95Ms": 1602,
+      "p99Ms": 2560,
+      "minMs": 403,
+      "maxMs": 2560
+    },
+    "GET [upcloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [upcloud] /api/v1.0/objectstorage/running",
+      "count": 62,
+      "success": 62,
+      "errors": 0,
+      "avgLatencyMs": 622,
+      "p50Ms": 505,
+      "p95Ms": 1182,
+      "p99Ms": 1609,
+      "minMs": 321,
+      "maxMs": 1609
+    },
+    "GET [google] /api/v1.0/kaas/running": {
+      "name": "GET [google] /api/v1.0/kaas/running",
+      "count": 53,
+      "success": 53,
+      "errors": 0,
+      "avgLatencyMs": 1360,
+      "p50Ms": 1025,
+      "p95Ms": 2915,
+      "p99Ms": 3310,
+      "minMs": 625,
+      "maxMs": 3310
+    },
+    "GET [azure] /api/v1.0/objectstorage/running": {
+      "name": "GET [azure] /api/v1.0/objectstorage/running",
+      "count": 64,
+      "success": 64,
+      "errors": 0,
+      "avgLatencyMs": 552,
+      "p50Ms": 349,
+      "p95Ms": 1815,
+      "p99Ms": 2329,
+      "minMs": 177,
+      "maxMs": 2329
+    }
+  },
+  "errorSummary": {}
+}

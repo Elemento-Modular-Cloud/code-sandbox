@@ -1,0 +1,78 @@
+{
+  "durationMs": 67730,
+  "totalRequests": 178,
+  "successCount": 178,
+  "errorCount": 0,
+  "requestsPerSecond": 2.6280820906540674,
+  "overallLatency": {
+    "avg": 933,
+    "p50": 761,
+    "p95": 2359,
+    "p99": 4575,
+    "min": 196,
+    "max": 5846
+  },
+  "byScenario": {
+    "GET [impossiblecloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [impossiblecloud] /api/v1.0/objectstorage/running",
+      "count": 49,
+      "success": 49,
+      "errors": 0,
+      "avgLatencyMs": 854,
+      "p50Ms": 819,
+      "p95Ms": 1485,
+      "p99Ms": 1696,
+      "minMs": 397,
+      "maxMs": 1696
+    },
+    "GET [upcloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [upcloud] /api/v1.0/objectstorage/running",
+      "count": 34,
+      "success": 34,
+      "errors": 0,
+      "avgLatencyMs": 557,
+      "p50Ms": 498,
+      "p95Ms": 942,
+      "p99Ms": 1314,
+      "minMs": 321,
+      "maxMs": 1314
+    },
+    "GET [azure] /api/v1.0/objectstorage/running": {
+      "name": "GET [azure] /api/v1.0/objectstorage/running",
+      "count": 39,
+      "success": 39,
+      "errors": 0,
+      "avgLatencyMs": 588,
+      "p50Ms": 492,
+      "p95Ms": 1580,
+      "p99Ms": 1980,
+      "minMs": 196,
+      "maxMs": 1980
+    },
+    "GET [google] /api/v1.0/kaas/running": {
+      "name": "GET [google] /api/v1.0/kaas/running",
+      "count": 43,
+      "success": 43,
+      "errors": 0,
+      "avgLatencyMs": 1039,
+      "p50Ms": 1016,
+      "p95Ms": 1566,
+      "p99Ms": 1969,
+      "minMs": 642,
+      "maxMs": 1969
+    },
+    "GET [scaleway] /api/v1.0/kaas/running": {
+      "name": "GET [scaleway] /api/v1.0/kaas/running",
+      "count": 13,
+      "success": 13,
+      "errors": 0,
+      "avgLatencyMs": 2897,
+      "p50Ms": 2437,
+      "p95Ms": 5846,
+      "p99Ms": 5846,
+      "minMs": 1233,
+      "maxMs": 5846
+    }
+  },
+  "errorSummary": {}
+}

@@ -1,0 +1,54 @@
+{
+  "durationMs": 66354,
+  "totalRequests": 95,
+  "successCount": 95,
+  "errorCount": 0,
+  "requestsPerSecond": 1.4317147421406395,
+  "overallLatency": {
+    "avg": 1516,
+    "p50": 1472,
+    "p95": 3404,
+    "p99": 7831,
+    "min": 263,
+    "max": 7831
+  },
+  "byScenario": {
+    "GET [azure] /api/v1.0/objectstorage/running": {
+      "name": "GET [azure] /api/v1.0/objectstorage/running",
+      "count": 20,
+      "success": 20,
+      "errors": 0,
+      "avgLatencyMs": 607,
+      "p50Ms": 421,
+      "p95Ms": 1549,
+      "p99Ms": 1931,
+      "minMs": 263,
+      "maxMs": 1931
+    },
+    "GET [impossiblecloud] /api/v1.0/objectstorage/running": {
+      "name": "GET [impossiblecloud] /api/v1.0/objectstorage/running",
+      "count": 30,
+      "success": 30,
+      "errors": 0,
+      "avgLatencyMs": 737,
+      "p50Ms": 601,
+      "p95Ms": 1526,
+      "p99Ms": 2023,
+      "minMs": 452,
+      "maxMs": 2023
+    },
+    "GET [wasabi] /api/v1.0/objectstorage/running": {
+      "name": "GET [wasabi] /api/v1.0/objectstorage/running",
+      "count": 45,
+      "success": 45,
+      "errors": 0,
+      "avgLatencyMs": 2438,
+      "p50Ms": 1977,
+      "p95Ms": 4865,
+      "p99Ms": 7831,
+      "minMs": 1422,
+      "maxMs": 7831
+    }
+  },
+  "errorSummary": {}
+}
